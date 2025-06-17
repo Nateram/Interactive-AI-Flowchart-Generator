@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama de Flujo Interactivo con IA</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #50e3c2;
+            --background-color: #f4f7f6;
+            --text-color: #333;
+            --node-border: #ccc;
+            --node-selected-border: var(--primary-color);
+            --connection-color: #666;
+            --connection-selected-color: var(--primary-color);
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: var(--font-family);
+            margin: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden; /* El scroll estará en el .flowchart-container */
+        }
+
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0; /* Evitar que el header se encoja */
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .controls button, .modal button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .controls button:hover, .modal button:hover {
+            background-color: #45c9b0;
+        }
+        .controls button:active, .modal button:active {
+            transform: scale(0.98);
+        }
+
+        .controls button svg {
+            width: 16px;
+            height: 16px;
+            fill: white;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            position: relative; 
+            overflow: hidden; /* Evitar doble scrollbar en el body */
+        }
+
+        .flowchart-container {
+            flex-grow: 1;
+            overflow: auto; /* ESTO ES CLAVE PARA EL SCROLL */
+            position: relative;
+            background-image:
+                linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        #flowchart-svg {
+            display: block; 
+        }
+
+        .node-shape {
+            stroke-width: 1.5;
+            transition: filter 0.2s ease, stroke 0.2s ease; 
+        }
+        .node-shape.selected {
+            stroke-width: 3;
+            filter: drop-shadow(0px 0px 5px var(--node-selected-border));
+        }
+        .node-text {
+            font-family: var(--font-family); 
+            font-size: 12px;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none; 
+            user-select: none;
+        }
+        .connection-point {
+            fill: red;
+            stroke: darkred;
+            stroke-width: 1;
+            cursor: crosshair;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .node:hover .connection-point, .connection-point.visible {
+            opacity: 1;
+        }
+
+        .connection-line { /* Ahora se aplica a <path> */
+            stroke-width: 2;
+            fill: none; /* Muy importante para paths */
+            transition: stroke 0.2s ease;
+        }
+        .connection-line.selected {
+            stroke-width: 4;
+        }
+        .connection-label {
+            font-family: var(--font-family); 
+            font-size: 10px;
+            fill: blue;
+            text-anchor: middle;
+            user-select: none;
+        }
+       
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0s 0.3s;
+        }
+        .modal.visible {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+        .modal-content h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        .modal-content label {
+            display: block;
+            margin-bottom: 8px;
+            text-align: left;
+            font-weight: bold;
+        }
+        .modal-content input[type="text"], 
+        .modal-content input[type="color"], 
+        .modal-content textarea,
+        .modal-content select {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        .modal-content textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        #context-menu {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 5px 0;
+            z-index: 1001;
+            min-width: 180px;
+        }
+        #context-menu div {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        #context-menu div:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--secondary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Diagrama de Flujo Interactivo</h1>
+        <div class="controls">
+            <button id="generate-ai-btn">
+                <svg viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,6H13V11L17,13L16.25,14.25L11.5,11.5V6M12,18A6,6 0 0,1 6,12H8A4,4 0 0,0 12,16A4,4 0 0,0 16,12H18A6,6 0 0,1 12,18Z" /></svg>
+                Generar con IA
+            </button>
+            <button id="add-connection-btn">
+                 <svg viewBox="0 0 24 24"><path d="M22 12L18 8V11H10V6L12 3L4 12L12 21L10 18V13H18V16L22 12Z" /></svg>
+                Conectar Nodos
+            </button>
+            <button id="export-svg-btn">
+                <svg viewBox="0 0 24 24"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z" /></svg>
+                Exportar SVG
+            </button>
+            <button id="clear-btn">
+                <svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg>
+                Limpiar
+            </button>
+            <button id="set-api-key-btn">
+                <svg viewBox="0 0 24 24"><path d="M12,2A4,4 0 0,0 8,6C8,7.58 9.06,8.91 10.5,9.54L4.88,15.12L6.29,16.54L12,10.83L17.71,16.54L19.12,15.12L13.5,9.53C14.94,8.91 16,7.58 16,6A4,4 0 0,0 12,2M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z" /></svg>
+                API Key
+            </button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="flowchart-container" id="flowchart-container">
+            <svg id="flowchart-svg" xmlns="http://www.w3.org/2000/svg"> <!-- Width/Height se manejan dinámicamente -->
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto-start-reverse"> <!-- Ajustado refX y orient para paths -->
+                        <polygon points="0 0, 10 3.5, 0 7" style="fill: var(--connection-color);" />
+                    </marker>
+                     <marker id="arrowhead-selected" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto-start-reverse">
+                        <polygon points="0 0, 10 3.5, 0 7" style="fill: var(--connection-selected-color);" />
+                    </marker>
+                </defs>
+                <g id="connections-group"></g>
+                <g id="nodes-group"></g>
+                <path id="connection-preview-line" stroke="gray" stroke-width="2" stroke-dasharray="5,5" fill="none" visibility="hidden" /> <!-- Cambiado a path para preview de curva -->
+            </svg>
+        </div>
+    </div>
+    
+    <div id="api-key-modal" class="modal">
+        <div class="modal-content">
+            <h2>Configurar API Key de Gemini</h2>
+            <p>Por favor, introduce tu API Key para Google Gemini.</p>
+            <label for="api-key-input">API Key:</label>
+            <input type="text" id="api-key-input" placeholder="AIzaSy..."/>
+            <button id="save-api-key-btn">Guardar</button>
+            <button id="cancel-api-key-btn" style="background-color: #aaa;">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="ai-prompt-modal" class="modal">
+        <div class="modal-content">
+            <h2>Generar Diagrama con IA</h2>
+            <p>Describe el proceso que quieres convertir en diagrama:</p>
+            <textarea id="ai-prompt-input" placeholder="Ej: Iniciar sesión, verificar credenciales, si es válido mostrar dashboard, si no mostrar error."></textarea>
+            <div id="ai-loader" class="loader" style="display: none;"></div>
+            <button id="submit-ai-prompt-btn">Generar</button>
+            <button id="cancel-ai-prompt-btn" style="background-color: #aaa;">Cancelar</button>
+        </div>
+    </div>
+    
+    <div id="edit-text-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="edit-text-modal-title">Editar Elemento</h2>
+            <label for="edit-text-input">Texto:</label>
+            <input type="text" id="edit-text-input"/>
+            <button id="save-edited-text-btn">Guardar</button>
+            <button id="cancel-edited-text-btn" style="background-color: #aaa;">Cancelar</button>
+        </div>
+    </div>
+
+     <div id="edit-connection-modal" class="modal">
+        <div class="modal-content">
+            <h2>Editar Conexión</h2>
+            <label for="edit-conn-label-input">Etiqueta:</label>
+            <input type="text" id="edit-conn-label-input"/>
+            
+            <label for="edit-conn-from-point">Desde punto:</label>
+            <select id="edit-conn-from-point">
+                <option value="top">Superior</option>
+                <option value="bottom">Inferior</option>
+                <option value="left">Izquierda</option>
+                <option value="right">Derecha</option>
+            </select>
+
+            <label for="edit-conn-to-point">Hacia punto:</label>
+            <select id="edit-conn-to-point">
+                <option value="top">Superior</option>
+                <option value="bottom">Inferior</option>
+                <option value="left">Izquierda</option>
+                <option value="right">Derecha</option>
+            </select>
+
+            <button id="save-edited-connection-btn">Guardar</button>
+            <button id="cancel-edited-connection-btn" style="background-color: #aaa;">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="context-menu" style="display:none;"></div>
+
+
+<script>
+    const SVG_NS = "http://www.w3.org/2000/svg";
+    const flowchartSVG = document.getElementById('flowchart-svg');
+    const nodesGroup = document.getElementById('nodes-group');
+    const connectionsGroup = document.getElementById('connections-group');
+    const connectionPreviewLine = document.getElementById('connection-preview-line'); // Ahora es un <path>
+    
+    const apiKeyModal = document.getElementById('api-key-modal');
+    const aiPromptModal = document.getElementById('ai-prompt-modal');
+    const editTextModal = document.getElementById('edit-text-modal');
+    const editConnectionModal = document.getElementById('edit-connection-modal');
+    const contextMenu = document.getElementById('context-menu');
+
+    let nodes = [];
+    let connections = [];
+    let nextNodeId = 1;
+    let selectedElement = null; 
+    let dragging = false;
+    let dragOffsetX, dragOffsetY;
+    let connectionMode = false;
+    let firstConnectionNode = null;
+    let firstConnectionPointName = null; 
+    let geminiApiKey = localStorage.getItem('geminiApiKey');
+
+    const NODE_WIDTH = 120;
+    const NODE_HEIGHT = 60;
+    const CONNECTION_POINT_RADIUS = 8;
+    const SVG_PADDING = 100; // Padding alrededor del contenido del SVG
+
+    function getCssVariable(variableName) {
+        return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    // --- API Key Management ---
+    document.getElementById('set-api-key-btn').addEventListener('click', () => {
+        apiKeyModal.classList.add('visible');
+        document.getElementById('api-key-input').value = geminiApiKey || '';
+    });
+    document.getElementById('save-api-key-btn').addEventListener('click', () => {
+        geminiApiKey = document.getElementById('api-key-input').value.trim();
+        if (geminiApiKey) {
+            localStorage.setItem('geminiApiKey', geminiApiKey);
+            apiKeyModal.classList.remove('visible');
+            alert('API Key guardada.');
+        } else {
+            alert('Por favor, introduce una API Key.');
+        }
+    });
+    document.getElementById('cancel-api-key-btn').addEventListener('click', () => apiKeyModal.classList.remove('visible'));
+
+    function checkApiKey() {
+        if (!geminiApiKey) {
+            apiKeyModal.classList.add('visible');
+            return false;
+        }
+        return true;
+    }
+
+    class FlowchartNode {
+        constructor(id, text, type, x, y, color = "#add8e6") {
+            this.id = id;
+            this.text = text;
+            this.type = type; 
+            this.x = x; 
+            this.y = y; 
+            this.width = NODE_WIDTH;
+            this.height = NODE_HEIGHT;
+            this.color = color; 
+            this.selected = false;
+        }
+
+        getConnectionPoints() {
+            return {
+                'top': { x: this.x, y: this.y - this.height / 2 },
+                'bottom': { x: this.x, y: this.y + this.height / 2 },
+                'left': { x: this.x - this.width / 2, y: this.y },
+                'right': { x: this.x + this.width / 2, y: this.y }
+            };
+        }
+    }
+
+    class FlowchartConnection {
+        constructor(id, fromNodeId, toNodeId, fromPoint = 'bottom', toPoint = 'top', label = "") {
+            this.id = id || `conn-${fromNodeId}-${toNodeId}-${Date.now()}`; 
+            this.fromNodeId = fromNodeId;
+            this.toNodeId = toNodeId;
+            this.fromPoint = fromPoint;
+            this.toPoint = toPoint;
+            this.label = label;
+            this.selected = false;
+        }
+    }
+    
+    function findNodeById(id) {
+        return nodes.find(n => n.id === id);
+    }
+    function findConnectionById(id) {
+        return connections.find(c => c.id === id);
+    }
+
+    function redrawAll() {
+        while (nodesGroup.firstChild) nodesGroup.removeChild(nodesGroup.firstChild);
+        while (connectionsGroup.firstChild) connectionsGroup.removeChild(connectionsGroup.firstChild);
+
+        connections.forEach(drawConnection);
+        nodes.forEach(drawNode);
+        updateSelectionVisuals(); 
+        updateSvgDimensions(); 
+    }
+
+    function updateSvgDimensions() {
+        const container = flowchartSVG.parentElement;
+        if (!container) return;
+
+        if (nodes.length === 0) {
+            flowchartSVG.setAttribute('width', container.clientWidth || '100%');
+            flowchartSVG.setAttribute('height', container.clientHeight || '100%');
+            flowchartSVG.removeAttribute('viewBox'); // Remover viewBox si no hay contenido
+            return;
+        }
+
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        nodes.forEach(node => {
+            minX = Math.min(minX, node.x - node.width / 2);
+            maxX = Math.max(maxX, node.x + node.width / 2);
+            minY = Math.min(minY, node.y - node.height / 2);
+            maxY = Math.max(maxY, node.y + node.height / 2);
+        });
+
+        // Asegurarse de que minX y minY no sean Infinity si solo hay un nodo o nodos en el mismo punto
+        minX = isFinite(minX) ? minX : 0;
+        minY = isFinite(minY) ? minY : 0;
+        maxX = isFinite(maxX) ? maxX : NODE_WIDTH;
+        maxY = isFinite(maxY) ? maxY : NODE_HEIGHT;
+
+
+        const contentWidth = Math.max(0, maxX - minX);
+        const contentHeight = Math.max(0, maxY - minY);
+
+        // El width/height del SVG debe ser al menos el tamaño de su contenedor para que el scroll funcione
+        // si el contenido es más pequeño que el contenedor.
+        const svgActualWidth = Math.max(maxX + SVG_PADDING, container.clientWidth);
+        const svgActualHeight = Math.max(maxY + SVG_PADDING, container.clientHeight);
+
+        flowchartSVG.setAttribute('width', svgActualWidth);
+        flowchartSVG.setAttribute('height', svgActualHeight);
+
+        // No necesitamos viewBox para el renderizado en pantalla si ajustamos width/height así
+        // flowchartSVG.setAttribute('viewBox', `${minX - SVG_PADDING/2} ${minY - SVG_PADDING/2} ${contentWidth + SVG_PADDING} ${contentHeight + SVG_PADDING}`);
+    }
+
+
+    function drawNode(node) {
+        const group = document.createElementNS(SVG_NS, 'g');
+        group.setAttribute('id', `node-${node.id}`);
+        group.setAttribute('class', 'node');
+        group.setAttribute('transform', `translate(${node.x - node.width/2}, ${node.y - node.height/2})`);
+        
+        let shape;
+        if (node.type === 'decision') {
+            shape = document.createElementNS(SVG_NS, 'polygon');
+            const w = node.width, h = node.height;
+            shape.setAttribute('points', `${w/2},0 ${w},${h/2} ${w/2},${h} 0,${h/2}`);
+        } else if (node.type === 'start' || node.type === 'end') {
+            shape = document.createElementNS(SVG_NS, 'ellipse');
+            shape.setAttribute('cx', node.width / 2);
+            shape.setAttribute('cy', node.height / 2);
+            shape.setAttribute('rx', node.width / 2);
+            shape.setAttribute('ry', node.height / 2);
+        } else { 
+            shape = document.createElementNS(SVG_NS, 'rect');
+            shape.setAttribute('width', node.width);
+            shape.setAttribute('height', node.height);
+            shape.setAttribute('rx', 5); 
+        }
+        shape.setAttribute('fill', node.color); 
+        shape.setAttribute('stroke', getCssVariable('--node-border')); 
+        shape.setAttribute('class', 'node-shape');
+        shape.dataset.nodeId = node.id;
+        group.appendChild(shape);
+
+        const text = document.createElementNS(SVG_NS, 'text');
+        text.setAttribute('x', node.width / 2);
+        text.setAttribute('y', node.height / 2);
+        text.setAttribute('class', 'node-text');
+        text.textContent = node.text;
+        group.appendChild(text);
+
+        const pointsData = node.getConnectionPoints();
+        for (const pointName in pointsData) {
+            const cp = document.createElementNS(SVG_NS, 'circle');
+            const relativeX = pointsData[pointName].x - node.x + node.width/2;
+            const relativeY = pointsData[pointName].y - node.y + node.height/2;
+            cp.setAttribute('cx', relativeX);
+            cp.setAttribute('cy', relativeY);
+            cp.setAttribute('r', CONNECTION_POINT_RADIUS);
+            cp.setAttribute('class', 'connection-point');
+            cp.dataset.nodeId = node.id;
+            cp.dataset.pointName = pointName;
+            group.appendChild(cp);
+        }
+        nodesGroup.appendChild(group);
+    }
+
+    function drawConnection(conn) {
+        const fromNode = findNodeById(conn.fromNodeId);
+        const toNode = findNodeById(conn.toNodeId);
+        if (!fromNode || !toNode) return;
+
+        const p1 = fromNode.getConnectionPoints()[conn.fromPoint];
+        const p2 = toNode.getConnectionPoints()[conn.toPoint];
+
+        const path = document.createElementNS(SVG_NS, 'path');
+        
+        // --- Lógica simple para puntos de control de curva cuadrática ---
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        let controlX = (p1.x + p2.x) / 2;
+        let controlY = (p1.y + p2.y) / 2;
+        const curveIntensity = 0.3; // Factor de curvatura
+
+        // Ajustar punto de control para "sacar" la curva
+        if (conn.fromPoint === 'bottom' || conn.fromPoint === 'top') { // Saliendo verticalmente
+            controlX += dx * curveIntensity; // Curva hacia el lado
+            if (conn.fromPoint === 'bottom') controlY += Math.abs(dy) * curveIntensity * Math.sign(dy); else controlY -= Math.abs(dy) * curveIntensity * Math.sign(dy);
+
+        } else { // Saliendo horizontalmente
+            controlY += dy * curveIntensity; // Curva hacia arriba/abajo
+             if (conn.fromPoint === 'right') controlX += Math.abs(dx) * curveIntensity * Math.sign(dx); else controlX -= Math.abs(dx) * curveIntensity * Math.sign(dx);
+        }
+        // Evitar que el punto de control sea el mismo que el punto final si son colineales
+        if(controlX === p2.x && controlY === p2.y) {
+            controlY += 20; // Pequeño offset
+        }
+        if(controlX === p1.x && controlY === p1.y) {
+            controlY -= 20; // Pequeño offset
+        }
+
+
+        const pathData = `M ${p1.x},${p1.y} Q ${controlX},${controlY} ${p2.x},${p2.y}`;
+        
+        path.setAttribute('d', pathData);
+        path.setAttribute('class', 'connection-line'); 
+        path.dataset.connectionId = conn.id;
+        connectionsGroup.appendChild(path); // El estilo y marker se aplica en updateSelectionVisuals
+
+        if (conn.label) {
+            const labelText = document.createElementNS(SVG_NS, 'text');
+            // Posicionar etiqueta en el punto de control (aproximación) o en el punto medio de la línea recta
+            let labelX = controlX;
+            let labelY = controlY - 10; // Un poco arriba del punto de control
+            // Si la curva es muy pronunciada, el punto medio de la línea recta puede ser mejor
+            if (Math.sqrt(Math.pow(controlX - (p1.x + p2.x)/2, 2) + Math.pow(controlY - (p1.y + p2.y)/2, 2)) > 50 ) {
+                 labelX = (p1.x + p2.x) / 2;
+                 labelY = (p1.y + p2.y) / 2 - 10;
+            }
+
+            labelText.setAttribute('x', labelX);
+            labelText.setAttribute('y', labelY);
+            labelText.setAttribute('class', 'connection-label');
+            labelText.textContent = conn.label;
+            labelText.dataset.connectionId = conn.id; 
+            connectionsGroup.appendChild(labelText);
+        }
+    }
+
+
+    function updateSelectionVisuals() {
+        document.querySelectorAll('.node-shape').forEach(s => {
+            const node = findNodeById(s.dataset.nodeId);
+            s.classList.toggle('selected', node && node.selected);
+            if (node && node.selected) {
+                s.style.stroke = getCssVariable('--node-selected-border'); 
+            } else {
+                s.style.stroke = getCssVariable('--node-border'); 
+            }
+        });
+        document.querySelectorAll('.connection-line').forEach(l => { // Ahora son <path>
+            const conn = findConnectionById(l.dataset.connectionId);
+            l.classList.toggle('selected', conn && conn.selected);
+             if (conn && conn.selected) {
+                l.style.stroke = getCssVariable('--connection-selected-color'); 
+                l.setAttribute('marker-end', 'url(#arrowhead-selected)');
+            } else {
+                l.style.stroke = getCssVariable('--connection-color'); 
+                l.setAttribute('marker-end', 'url(#arrowhead)');
+            }
+        });
+        document.querySelectorAll('.connection-label').forEach(l => {
+             const conn = findConnectionById(l.dataset.connectionId);
+             if (conn && conn.selected) l.style.fontWeight = 'bold'; else l.style.fontWeight = 'normal';
+        });
+    }
+
+    flowchartSVG.addEventListener('mousedown', (e) => {
+        hideContextMenu();
+        const target = e.target;
+        const { x: svgX, y: svgY } = getSVGCoordinates(e);
+
+        deselectAll(); 
+
+        if (target.classList.contains('connection-point') && connectionMode) {
+            const nodeId = target.dataset.nodeId;
+            const pointName = target.dataset.pointName;
+            const nodeInstance = findNodeById(nodeId); 
+
+            if (!firstConnectionNode) {
+                firstConnectionNode = nodeInstance;
+                firstConnectionPointName = pointName;
+                const absPoint = nodeInstance.getConnectionPoints()[pointName];
+                // Para preview de curva, Mover a p1, Q p1 (control inicial) p1 (destino inicial)
+                connectionPreviewLine.setAttribute('d', `M ${absPoint.x},${absPoint.y} Q ${absPoint.x},${absPoint.y} ${absPoint.x},${absPoint.y}`);
+                connectionPreviewLine.setAttribute('visibility', 'visible');
+                target.classList.add('visible'); 
+            } else if (nodeInstance.id !== firstConnectionNode.id) { 
+                const newConn = new FlowchartConnection(
+                    null, 
+                    firstConnectionNode.id,
+                    nodeInstance.id,
+                    firstConnectionPointName,
+                    pointName
+                );
+                connections.push(newConn);
+                resetConnectionMode(); 
+            }
+        } else if (target.classList.contains('node-shape')) {
+            const nodeId = target.dataset.nodeId;
+            selectedElement = findNodeById(nodeId);
+            if (selectedElement) {
+                selectedElement.selected = true;
+                dragging = true;
+                dragOffsetX = svgX - selectedElement.x + selectedElement.width/2; 
+                dragOffsetY = svgY - selectedElement.y + selectedElement.height/2;
+            }
+        } else if (target.classList.contains('connection-line') || target.classList.contains('connection-label')) { // target es <path> o <text>
+            const connId = target.dataset.connectionId;
+            selectedElement = findConnectionById(connId);
+             if (selectedElement) selectedElement.selected = true;
+        } else {
+            selectedElement = null; 
+        }
+        updateSelectionVisuals();
+    });
+
+    flowchartSVG.addEventListener('mousemove', (e) => {
+        const { x: svgX, y: svgY } = getSVGCoordinates(e); 
+
+        if (dragging && selectedElement && (selectedElement instanceof FlowchartNode)) {
+            selectedElement.x = svgX - dragOffsetX + selectedElement.width/2;
+            selectedElement.y = svgY - dragOffsetY + selectedElement.height/2;
+            
+            const nodeElement = document.getElementById(`node-${selectedElement.id}`);
+            if(nodeElement) nodeElement.setAttribute('transform', `translate(${selectedElement.x - selectedElement.width/2}, ${selectedElement.y - selectedElement.height/2})`);
+            
+            connections.forEach(conn => { // Redibujar conexiones afectadas
+                if (conn.fromNodeId === selectedElement.id || conn.toNodeId === selectedElement.id) {
+                    const lineElem = connectionsGroup.querySelector(`path[data-connection-id="${conn.id}"]`); // Buscamos path
+                    const labelElem = connectionsGroup.querySelector(`text[data-connection-id="${conn.id}"]`);
+                    if (lineElem) connectionsGroup.removeChild(lineElem);
+                    if (labelElem) connectionsGroup.removeChild(labelElem);
+                    drawConnection(conn); 
+                }
+            });
+            updateSelectionVisuals(); 
+            updateSvgDimensions(); // Actualizar dimensiones del SVG
+        } else if (connectionMode && firstConnectionNode) {
+            const p1 = firstConnectionNode.getConnectionPoints()[firstConnectionPointName];
+            // Para preview de curva, Mover a p1, Q (punto medio entre p1 y cursor) cursor
+            const controlPreviewX = (p1.x + svgX) / 2;
+            const controlPreviewY = (p1.y + svgY) / 2; // Control simple para preview
+            connectionPreviewLine.setAttribute('d', `M ${p1.x},${p1.y} Q ${controlPreviewX},${controlPreviewY} ${svgX},${svgY}`);
+            
+            document.querySelectorAll('.connection-point').forEach(cp => cp.classList.remove('visible'));
+            if (e.target.classList.contains('connection-point')) {
+                e.target.classList.add('visible');
+            }
+            const sourceNodeElem = document.getElementById(`node-${firstConnectionNode.id}`);
+            if (sourceNodeElem) {
+               const sourcePointElem = sourceNodeElem.querySelector(`.connection-point[data-point-name="${firstConnectionPointName}"]`);
+               if(sourcePointElem) sourcePointElem.classList.add('visible');
+            }
+        }
+    });
+
+    flowchartSVG.addEventListener('mouseup', () => {
+        dragging = false;
+    });
+
+    flowchartSVG.addEventListener('dblclick', (e) => {
+        const target = e.target;
+        deselectAll(); 
+        if (target.classList.contains('node-shape') || (target.classList.contains('node-text') && target.parentElement.querySelector('.node-shape'))) {
+            const nodeId = target.dataset.nodeId || target.parentElement.querySelector('.node-shape').dataset.nodeId;
+            const node = findNodeById(nodeId);
+            if (node) {
+                selectedElement = node;
+                selectedElement.selected = true;
+                openEditTextModal(node);
+            }
+        } else if (target.classList.contains('connection-line') || target.classList.contains('connection-label')) { // target es <path> o <text>
+            const connId = target.dataset.connectionId;
+            const conn = findConnectionById(connId);
+            if (conn) {
+                selectedElement = conn;
+                selectedElement.selected = true;
+                openEditConnectionModal(conn);
+            }
+        }
+        updateSelectionVisuals();
+    });
+
+    flowchartSVG.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        hideContextMenu();
+        deselectAll(); 
+        
+        let targetElementInstance = null; 
+
+        if (e.target.classList.contains('node-shape')) {
+             targetElementInstance = findNodeById(e.target.dataset.nodeId);
+        } else if (e.target.classList.contains('connection-line') || e.target.classList.contains('connection-label')) {
+             targetElementInstance = findConnectionById(e.target.dataset.connectionId);
+        }
+        
+        if (targetElementInstance) {
+            selectedElement = targetElementInstance;
+            selectedElement.selected = true;
+            updateSelectionVisuals();
+            showContextMenu(e.clientX, e.clientY, targetElementInstance);
+        } else if (connectionMode) { 
+            resetConnectionMode();
+            alert('Modo conexión cancelado.');
+        }
+    });
+
+    document.addEventListener('click', (e) => { 
+        if (!contextMenu.contains(e.target) && !e.target.closest('#context-menu')) { 
+            hideContextMenu();
+        }
+    });
+    
+    function showContextMenu(x, y, elementInstance) { 
+        contextMenu.innerHTML = ''; 
+        
+        if (elementInstance instanceof FlowchartNode) {
+            addContextMenuItem('Editar Texto', () => openEditTextModal(elementInstance));
+            addContextMenuItem('Cambiar Color', () => {
+                const colorPicker = document.createElement('input');
+                colorPicker.type = 'color';
+                colorPicker.style.visibility = 'hidden'; 
+                colorPicker.style.position = 'absolute';
+                document.body.appendChild(colorPicker); 
+                colorPicker.value = elementInstance.color;
+                const changeHandler = (ev) => {
+                    elementInstance.color = ev.target.value;
+                    redrawAll();
+                    hideContextMenu();
+                    document.body.removeChild(colorPicker);
+                };
+                colorPicker.onchange = changeHandler;
+                // Para algunos navegadores, oninput es mejor para live preview
+                colorPicker.oninput = changeHandler; 
+                // Necesario para cancelar si el usuario cierra el picker sin seleccionar
+                colorPicker.oncancel = () => {
+                    hideContextMenu();
+                    document.body.removeChild(colorPicker);
+                };
+                colorPicker.click(); 
+            });
+            addContextMenuItem('Eliminar Nodo', () => deleteElement(elementInstance));
+        } else if (elementInstance instanceof FlowchartConnection) {
+            addContextMenuItem('Editar Conexión', () => openEditConnectionModal(elementInstance));
+            addContextMenuItem('Eliminar Conexión', () => deleteElement(elementInstance));
+        }
+
+        contextMenu.style.left = `${x}px`;
+        contextMenu.style.top = `${y}px`;
+        contextMenu.style.display = 'block';
+    }
+
+    function addContextMenuItem(label, action) {
+        const item = document.createElement('div');
+        item.textContent = label;
+        item.onclick = (e) => { 
+            e.stopPropagation(); 
+            action();
+            // hideContextMenu(); // Se llama dentro de la acción o en colorPicker.onchange
+        };
+        contextMenu.appendChild(item);
+    }
+
+    function hideContextMenu() {
+        contextMenu.style.display = 'none';
+    }
+
+    function openEditTextModal(elementInstance) { 
+        document.getElementById('edit-text-modal-title').textContent = (elementInstance instanceof FlowchartNode) ? 'Editar Texto del Nodo' : 'Editar Etiqueta de Conexión';
+        document.getElementById('edit-text-input').value = elementInstance.text || elementInstance.label || '';
+        editTextModal.classList.add('visible');
+        document.getElementById('edit-text-input').focus();
+        selectedElement = elementInstance; 
+    }
+    document.getElementById('save-edited-text-btn').addEventListener('click', () => {
+        if (selectedElement) { 
+            const newText = document.getElementById('edit-text-input').value;
+            if (selectedElement instanceof FlowchartNode) selectedElement.text = newText;
+            else if (selectedElement instanceof FlowchartConnection) selectedElement.label = newText;
+            redrawAll();
+        }
+        editTextModal.classList.remove('visible');
+    });
+    document.getElementById('cancel-edited-text-btn').addEventListener('click', () => editTextModal.classList.remove('visible'));
+
+    function openEditConnectionModal(connInstance) { 
+        document.getElementById('edit-conn-label-input').value = connInstance.label;
+        document.getElementById('edit-conn-from-point').value = connInstance.fromPoint;
+        document.getElementById('edit-conn-to-point').value = connInstance.toPoint;
+        editConnectionModal.classList.add('visible');
+        selectedElement = connInstance; 
+    }
+    document.getElementById('save-edited-connection-btn').addEventListener('click', () => {
+        if (selectedElement && selectedElement instanceof FlowchartConnection) {
+            selectedElement.label = document.getElementById('edit-conn-label-input').value;
+            selectedElement.fromPoint = document.getElementById('edit-conn-from-point').value;
+            selectedElement.toPoint = document.getElementById('edit-conn-to-point').value;
+            redrawAll();
+        }
+        editConnectionModal.classList.remove('visible');
+    });
+    document.getElementById('cancel-edited-connection-btn').addEventListener('click', () => editConnectionModal.classList.remove('visible'));
+
+    function getSVGCoordinates(event) {
+        const pt = flowchartSVG.createSVGPoint();
+        pt.x = event.clientX;
+        pt.y = event.clientY;
+        try {
+            const ctm = flowchartSVG.getScreenCTM();
+            if (ctm) {
+                const svgPoint = pt.matrixTransform(ctm.inverse());
+                return { x: svgPoint.x, y: svgPoint.y };
+            }
+        } catch (e) {
+            console.error("Error al obtener CTM del SVG:", e);
+        }
+        // Fallback si getScreenCTM falla (ej. SVG no visible aún)
+        const rect = flowchartSVG.getBoundingClientRect();
+        return { 
+            x: event.clientX - rect.left, 
+            y: event.clientY - rect.top 
+        };
+    }
+
+
+    function deselectAll() {
+        nodes.forEach(n => n.selected = false);
+        connections.forEach(c => c.selected = false);
+    }
+
+    function deleteElement(elementInstance) { 
+        if (!elementInstance) elementInstance = selectedElement;
+        if (!elementInstance) return;
+
+        if (elementInstance instanceof FlowchartNode) {
+            nodes = nodes.filter(n => n.id !== elementInstance.id);
+            connections = connections.filter(c => c.fromNodeId !== elementInstance.id && c.toNodeId !== elementInstance.id);
+        } else if (elementInstance instanceof FlowchartConnection) {
+            connections = connections.filter(c => c.id !== elementInstance.id);
+        }
+        selectedElement = null;
+        redrawAll();
+    }
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+            if (selectedElement && 
+                (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA')) { 
+                e.preventDefault();
+                deleteElement(selectedElement);
+            }
+        }
+        if (e.key === 'Escape') {
+            if (connectionMode) {
+                resetConnectionMode();
+                alert('Modo conexión cancelado.');
+            }
+            hideContextMenu();
+            document.querySelectorAll('.modal.visible').forEach(m => m.classList.remove('visible'));
+        }
+    });
+
+    document.getElementById('add-connection-btn').addEventListener('click', () => {
+        connectionMode = true;
+        firstConnectionNode = null;
+        firstConnectionPointName = null;
+        connectionPreviewLine.setAttribute('visibility', 'hidden');
+        document.querySelectorAll('.node').forEach(nodeEl => { 
+            nodeEl.querySelectorAll('.connection-point').forEach(cp => cp.classList.add('visible'));
+        });
+        alert('Modo Conexión Activado: Haz clic en un punto de conexión de origen, luego en uno de destino. Click derecho o ESC para cancelar.');
+    });
+
+    function resetConnectionMode() {
+        connectionMode = false;
+        firstConnectionNode = null;
+        firstConnectionPointName = null;
+        connectionPreviewLine.setAttribute('visibility', 'hidden');
+        document.querySelectorAll('.connection-point.visible').forEach(cp => cp.classList.remove('visible'));
+        redrawAll(); 
+    }
+
+    document.getElementById('clear-btn').addEventListener('click', () => {
+        if (confirm('¿Estás seguro de que quieres limpiar todo el diagrama?')) {
+            nodes = [];
+            connections = [];
+            nextNodeId = 1;
+            selectedElement = null;
+            resetConnectionMode(); 
+        }
+    });
+
+    document.getElementById('export-svg-btn').addEventListener('click', () => {
+        if (nodes.length === 0) {
+            alert("No hay nada que exportar.");
+            return;
+        }
+
+        const svgClone = flowchartSVG.cloneNode(true);
+
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        if (nodes.length > 0) {
+            nodes.forEach(node => {
+                minX = Math.min(minX, node.x - node.width / 2);
+                maxX = Math.max(maxX, node.x + node.width / 2);
+                minY = Math.min(minY, node.y - node.height / 2);
+                maxY = Math.max(maxY, node.y + node.height / 2);
+            });
+        } else { // Valores por defecto si no hay nodos, aunque ya se verificó arriba
+            minX = 0; minY = 0; maxX = 200; maxY = 150;
+        }
+        
+        // Asegurar que minX, minY, maxX, maxY sean finitos
+        minX = isFinite(minX) ? minX : 0;
+        minY = isFinite(minY) ? minY : 0;
+        maxX = isFinite(maxX) ? maxX : flowchartSVG.parentElement.clientWidth || 2000;
+        maxY = isFinite(maxY) ? maxY : flowchartSVG.parentElement.clientHeight || 1500;
+
+
+        const exportContentWidth = Math.max(0, maxX - minX);
+        const exportContentHeight = Math.max(0, maxY - minY);
+        
+        const exportWidth = exportContentWidth + SVG_PADDING;
+        const exportHeight = exportContentHeight + SVG_PADDING;
+        const viewBoxMinX = minX - SVG_PADDING / 2;
+        const viewBoxMinY = minY - SVG_PADDING / 2;
+
+
+        svgClone.setAttribute('width', exportWidth);
+        svgClone.setAttribute('height', exportHeight);
+        svgClone.setAttribute('viewBox', `${viewBoxMinX} ${viewBoxMinY} ${exportWidth} ${exportHeight}`);
+
+        const previewLineClone = svgClone.querySelector('#connection-preview-line');
+        if (previewLineClone) previewLineClone.remove();
+
+        svgClone.querySelectorAll('.connection-point').forEach(cp => {
+            cp.remove(); // Removerlos para la exportación
+        });
+        
+        svgClone.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+
+        const styleElement = document.createElementNS(SVG_NS, 'style');
+        styleElement.textContent = `
+            .node-shape { stroke-width: 1.5; stroke: ${getCssVariable('--node-border')}; }
+            .node-text { 
+                font-family: ${getCssVariable('--font-family')}; 
+                font-size: 12px; text-anchor: middle; 
+                dominant-baseline: middle; pointer-events: none; user-select: none; 
+            }
+            .connection-line { 
+                stroke-width: 2; fill: none; stroke: ${getCssVariable('--connection-color')};
+            }
+            .connection-label { 
+                font-family: ${getCssVariable('--font-family')}; 
+                font-size: 10px; fill: blue; text-anchor: middle; user-select: none;
+            }
+        `;
+        // Insertar antes del primer grupo para que no afecte a los markers en <defs>
+        const firstGroup = svgClone.querySelector('g');
+        if (firstGroup) {
+            svgClone.insertBefore(styleElement, firstGroup);
+        } else {
+            svgClone.appendChild(styleElement); // Fallback
+        }
+
+
+        const serializer = new XMLSerializer();
+        let svgString = serializer.serializeToString(svgClone);
+        
+        if (!svgString.startsWith('<?xml')) {
+            svgString = '<?xml version="1.0" standalone="no"?>\r\n' + svgString;
+        }
+        if (svgClone.getAttribute('xmlns') !== SVG_NS && !svgString.includes(`xmlns="${SVG_NS}"`)) {
+            svgString = svgString.replace(/<svg/i, `<svg xmlns="${SVG_NS}"`);
+        }
+
+        const blob = new Blob([svgString], {type: "image/svg+xml;charset=utf-8"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'flowchart.svg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert('SVG exportado.');
+    });
+
+    // --- AI Generation (sin cambios, usando la versión corregida de la respuesta anterior) ---
+    document.getElementById('generate-ai-btn').addEventListener('click', () => {
+        if (!checkApiKey()) return;
+        aiPromptModal.classList.add('visible');
+        document.getElementById('ai-prompt-input').value = '';
+        document.getElementById('ai-loader').style.display = 'none';
+    });
+    document.getElementById('cancel-ai-prompt-btn').addEventListener('click', () => aiPromptModal.classList.remove('visible'));
+
+    document.getElementById('submit-ai-prompt-btn').addEventListener('click', async () => {
+        const promptText = document.getElementById('ai-prompt-input').value.trim();
+        if (!promptText) {
+            alert('Por favor, introduce una descripción para el diagrama.');
+            return;
+        }
+        if (!checkApiKey()) return;
+
+        document.getElementById('ai-loader').style.display = 'block';
+        document.getElementById('submit-ai-prompt-btn').disabled = true;
+
+        const systemPrompt = `
+        Eres un asistente que convierte descripciones de procesos en diagramas de flujo JSON.
+        INSTRUCCIONES IMPORTANTES:
+        1. Responde ÚNICAMENTE con un JSON válido, sin texto adicional antes o después del JSON.
+        2. No uses comillas dobles dentro de los valores "text" o "label" de los nodos/conexiones. Usa comillas simples si es necesario, o evítalas.
+        3. Los textos deben ser cortos (máximo 3-4 palabras).
+        4. NO incluyas colores, se asignarán automáticamente.
+        5. Usa coordenadas X entre 100 y 1800, y Y entre 100 y 1300.
+        6. Separa los nodos por al menos 150-200 píxeles para evitar solapamientos.
+        7. Asegúrate de que los IDs de los nodos sean únicos.
+        8. Para los puntos de conexión ('from_point', 'to_point'), usa solo 'top', 'bottom', 'left', 'right'.
+
+        ESTRUCTURA EXACTA DEL JSON DE SALIDA:
+        {
+            "nodes": [
+                {"id": "start1", "text": "Inicio del Proceso", "type": "start", "x": 400, "y": 100},
+                {"id": "process1", "text": "Realizar Accion", "type": "process", "x": 400, "y": 250},
+                {"id": "decision1", "text": "Hay Condicion?", "type": "decision", "x": 400, "y": 400},
+                {"id": "process2", "text": "Accion Si", "type": "process", "x": 250, "y": 550},
+                {"id": "process3", "text": "Accion No", "type": "process", "x": 550, "y": 550},
+                {"id": "end1", "text": "Fin del Proceso", "type": "end", "x": 400, "y": 700}
+            ],
+            "connections": [
+                {"from": "start1", "to": "process1", "from_point": "bottom", "to_point": "top", "label": ""},
+                {"from": "process1", "to": "decision1", "from_point": "bottom", "to_point": "top", "label": ""},
+                {"from": "decision1", "to": "process2", "from_point": "left", "to_point": "top", "label": "Si"},
+                {"from": "decision1", "to": "process3", "from_point": "right", "to_point": "top", "label": "No"},
+                {"from": "process2", "to": "end1", "from_point": "bottom", "to_point": "top", "label": ""},
+                {"from": "process3", "to": "end1", "from_point": "bottom", "to_point": "top", "label": ""}
+            ]
+        }
+        TIPOS DE NODOS PERMITIDOS: start, end, process, decision.
+        PUNTOS DE CONEXIÓN PERMITIDOS: top, bottom, left, right.
+        Asegúrate de que cada nodo en 'connections' exista en la lista de 'nodes'.
+        El JSON debe empezar con { y terminar con }. No incluyas ningún otro texto fuera del bloque JSON.
+        `;
+
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`;
+        
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: systemPrompt + "\n\nDescripción del proceso: " + promptText }] }]
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Error de API: ${response.status} - ${errorData.error?.message || 'Error desconocido'}`);
+            }
+
+            const data = await response.json();
+            let aiResponseText = "";
+            if (data.candidates && data.candidates.length > 0 && 
+                data.candidates[0].content && data.candidates[0].content.parts && 
+                data.candidates[0].content.parts.length > 0 && data.candidates[0].content.parts[0].text) {
+                aiResponseText = data.candidates[0].content.parts[0].text;
+            } else {
+                throw new Error("Respuesta de la IA no contiene el texto esperado.");
+            }
+            
+            aiResponseText = aiResponseText.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
+            const firstBrace = aiResponseText.indexOf('{');
+            const lastBrace = aiResponseText.lastIndexOf('}');
+
+            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+                aiResponseText = aiResponseText.substring(firstBrace, lastBrace + 1);
+            } else {
+                throw new Error("No se pudo extraer un bloque JSON válido de la respuesta de la IA. Respuesta: " + aiResponseText.substring(0, 200) + "...");
+            }
+
+            const diagramData = JSON.parse(aiResponseText);
+            createDiagramFromData(diagramData);
+            aiPromptModal.classList.remove('visible');
+            alert('Diagrama generado exitosamente!');
+
+        } catch (error) {
+            console.error('Error generando diagrama con IA:', error);
+            alert(`Error al generar diagrama: ${error.message}. Revisa la consola para más detalles.\nAsegúrate que tu API Key sea correcta y tenga permisos para Gemini.`);
+        } finally {
+            document.getElementById('ai-loader').style.display = 'none';
+            document.getElementById('submit-ai-prompt-btn').disabled = false;
+        }
+    });
+
+    function createDiagramFromData(data) {
+        nodes = [];
+        connections = [];
+        nextNodeId = 1; 
+
+        const nodeColors = {
+            "start": "#90EE90",    
+            "end": "#FFB6C1",      
+            "process": "#87CEEB",  
+            "decision": "#FFE4B5"  
+        };
+
+        if (data.nodes) {
+            data.nodes.forEach(nodeData => {
+                const id = nodeData.id || `node${nextNodeId++}`;
+                const node = new FlowchartNode(
+                    id,
+                    nodeData.text,
+                    nodeData.type,
+                    parseInt(nodeData.x) || (Math.random() * 1500 + 100), 
+                    parseInt(nodeData.y) || (Math.random() * 1000 + 100), 
+                    nodeColors[nodeData.type] || '#add8e6' 
+                );
+                nodes.push(node);
+                const numericIdPart = id.match(/\d+$/);
+                if (numericIdPart) {
+                    const numericId = parseInt(numericIdPart[0]);
+                    if (numericId >= nextNodeId) {
+                         nextNodeId = numericId + 1;
+                    }
+                }
+            });
+        }
+
+        if (data.connections) {
+            data.connections.forEach(connData => {
+                const fromNode = findNodeById(connData.from);
+                const toNode = findNodeById(connData.to);
+                if (fromNode && toNode) {
+                    const conn = new FlowchartConnection(
+                        null, 
+                        connData.from,
+                        connData.to,
+                        connData.from_point || 'bottom',
+                        connData.to_point || 'top',
+                        connData.label || ''
+                    );
+                    connections.push(conn);
+                } else {
+                    console.warn("Conexión inválida de IA, nodo no encontrado:", connData);
+                }
+            });
+        }
+        redrawAll(); 
+    }
+    
+    // --- Inicialización ---
+    redrawAll(); // Dibujar vacío inicialmente y ajustar SVG
+    checkApiKey(); 
+
+</script>
+</body>
+</html>
