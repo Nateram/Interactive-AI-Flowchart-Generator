@@ -3,358 +3,443 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagrama de Flujo Interactivo con IA</title>
+    <title>FlowVibe - Diagramas con Estilo</title>
     <style>
         :root {
-            --primary-color: #4a90e2;
-            --secondary-color: #50e3c2;
-            --background-color: #f4f7f6;
-            --text-color: #333;
-            --node-border: #ccc;
-            --node-selected-border: var(--primary-color);
-            --connection-color: #666;
-            --connection-selected-color: var(--primary-color);
-            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            --border-radius: 8px;
-            --box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            --danger-color: #e74c3c;
-            --danger-hover-color: #c0392b;
+            /* Fondos */
+            --bg-canvas: #FFFFFF; 
+            --bg-ui-main: #F9FAFB; 
+            --bg-header: #6D28D9; 
+            --bg-ui-secondary: #FFFFFF; 
+            --bg-input: #F3F4F6; 
+            
+            /* Texto */
+            --text-primary: #1F2937; 
+            --text-secondary: #6B7280; 
+            --text-header: #FFFFFF; 
+            --text-placeholder: #9CA3AF;
+
+            /* Acentos y Botones Header */
+            --accent-primary: var(--bg-header); 
+            --accent-primary-hover: #5B21B6; 
+            
+            --button-header-bg: #0D9488; 
+            --button-header-bg-hover: #0F766E; 
+            --button-header-text: #FFFFFF;
+
+            /* Botones de Modal y Sidebar especiales */
+            --button-modal-accept-bg: var(--accent-success); 
+            --button-modal-accept-bg-hover: #15803D; 
+            --button-modal-cancel-bg: #E5E7EB; 
+            --button-modal-cancel-bg-hover: #D1D5DB; 
+            --button-modal-text: #374151; 
+            --button-modal-accept-text: #FFFFFF; 
+
+            --accent-secondary-border: #E5E7EB; 
+            --accent-danger: #EF4444; 
+            --accent-danger-hover: #DC2626;
+            --accent-warning: #F59E0B; 
+            --accent-success: #10B981; 
+
+            /* Nodos */
+            --node-border: #D1D5DB;
+            --node-selected-border: var(--accent-primary);
+            --node-text-color: var(--text-primary);
+
+            --node-process-bg: #E0E7FF; 
+            --node-decision-bg: #FEF9C3; 
+            --node-start-bg: #D1FAE5;   
+            --node-end-bg: #FEE2E2;     
+
+            /* Conexiones */
+            --connection-color: #9CA3AF; 
+            --connection-selected-color: var(--accent-primary);
+            --connection-label-color: #4B5563; 
+            
+            --control-point-color: var(--accent-primary);
+
+            --font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            --border-radius-modal-button: 20px; 
+            --border-radius-general: 6px; 
+            --box-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --box-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+            --box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
         }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         body {
             font-family: var(--font-family);
             margin: 0;
-            background-color: var(--background-color);
-            color: var(--text-color);
+            background-color: var(--bg-ui-main); 
+            color: var(--text-primary);
             display: flex;
             flex-direction: column;
             height: 100vh;
-            overflow: hidden;
+            overflow: hidden; 
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         .header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 15px 20px;
+            background-color: var(--bg-header);
+            color: var(--text-header);
+            padding: 12px 24px; 
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: var(--box-shadow-md); 
             flex-shrink: 0;
+            z-index: 10;
         }
 
-        .header h1 {
-            margin: 0;
-            font-size: 1.5em;
-        }
-        
-        .controls {
-            display: flex;
-            gap: 10px;
-        }
+        .header h1 { margin: 0; font-size: 1.4em; font-weight: 600; letter-spacing: 0.5px; }
+        .controls { display: flex; flex-wrap: wrap; gap: 10px; position: relative; }
 
-        .controls button, .modal button, .sidebar button {
-            background-color: var(--secondary-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: var(--border-radius);
+        .controls button { 
+            background-color: var(--button-header-bg);
+            color: var(--button-header-text);
+            border: none; 
+            padding: 8px 14px; 
+            border-radius: var(--border-radius-general);
             cursor: pointer;
-            font-size: 0.9em;
-            transition: background-color 0.3s ease, transform 0.1s ease;
+            font-size: 0.875em; 
+            font-weight: 500;
+            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
+            box-shadow: var(--box-shadow-sm);
         }
-        .controls button:hover, .modal button:hover, .sidebar button:hover {
-            background-color: #45c9b0;
+        .controls button:hover { 
+            background-color: var(--button-header-bg-hover);
+            box-shadow: var(--box-shadow-md);
         }
-        .controls button:active, .modal button:active, .sidebar button:active {
-            transform: scale(0.98);
+        .controls button:active { 
+            transform: scale(0.97); 
+            box-shadow: none;
         }
-        .sidebar button.danger {
-            background-color: var(--danger-color);
+        
+        .controls button#add-connection-btn.active { 
+            background-color: var(--accent-warning); 
+            color: var(--text-primary);
         }
-        .sidebar button.danger:hover {
-            background-color: var(--danger-hover-color);
+         .controls button#add-connection-btn.active svg { fill: var(--text-primary); }
+        
+        .controls button svg { width: 15px; height: 15px; fill: var(--button-header-text); }
+        
+        .dropdown-container { position: relative; }
+        .dropdown-menu {
+            display: none; position: absolute; top: calc(100% + 6px); left: 0; 
+            background-color: var(--bg-ui-secondary);
+            border-radius: var(--border-radius-general); 
+            box-shadow: var(--box-shadow-lg); 
+            z-index: 100;
+            overflow: hidden; padding: 6px; min-width: 180px;
+            border: 1px solid var(--accent-secondary-border); 
         }
+        .dropdown-menu button {
+             background-color: transparent;
+             color: var(--text-primary); 
+             box-shadow: none;
+             border:none;
+             width: 100%; box-sizing: border-box; justify-content: flex-start;
+             margin-bottom: 3px;
+             padding: 8px 12px;
+        }
+        .dropdown-menu button:last-child { margin-bottom: 0; }
+        .dropdown-menu button:hover { 
+            background-color: var(--accent-primary); 
+            color: white;
+        }
+        .dropdown-menu button:hover svg { fill: white; }
+        .dropdown-menu button svg { fill: var(--text-secondary); } 
 
-        .controls button svg {
-            width: 16px;
-            height: 16px;
-            fill: white;
-        }
 
-        .main-content {
-            flex-grow: 1;
-            display: flex;
-            position: relative; 
-            overflow: hidden;
-        }
-
+        .main-content { flex-grow: 1; display: flex; position: relative; overflow: hidden; }
         .flowchart-container {
-            flex-grow: 1;
-            overflow: auto;
+            flex-grow: 1; 
             position: relative;
+            background-color: var(--bg-canvas); 
             background-image:
-                linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
-            background-size: 20px 20px;
+                linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+            background-size: 20px 20px; 
+            cursor: grab; 
         }
-
-        #flowchart-svg {
+        .flowchart-container.panning {
+            cursor: grabbing;
+        }
+        #flowchart-svg { 
             display: block; 
+            width: 100%; 
+            height: 100%;
+            overflow: visible; 
         }
-
-        .node-shape {
-            stroke-width: 1.5;
-            transition: filter 0.2s ease, stroke 0.2s ease; 
+        .node-shape { 
+            stroke-width: 1.5px; 
+            transition: filter 0.2s ease, stroke 0.2s ease, fill 0.2s ease; 
+            stroke: var(--node-border);
         }
-        .node-shape.selected {
-            stroke-width: 3;
-            filter: drop-shadow(0px 0px 5px var(--node-selected-border));
+        .node-shape.selected { 
+            stroke-width: 2.5px; 
+            filter: drop-shadow(0px 0px 6px var(--accent-primary)); 
+            stroke: var(--node-selected-border);
         }
         .node-text {
-            font-family: var(--font-family); 
-            font-size: 12px;
+            font-family: var(--font-family); font-size: 11.5px; 
             text-anchor: middle;
-            dominant-baseline: middle;
-            pointer-events: none; 
-            user-select: none;
+            dominant-baseline: middle; pointer-events: none; user-select: none;
+            fill: var(--node-text-color); 
         }
         .connection-point {
-            fill: red;
-            stroke: darkred;
-            stroke-width: 1;
-            cursor: crosshair;
-            opacity: 0;
+            fill: var(--accent-primary); 
+            stroke: var(--bg-canvas); 
+            stroke-width: 1.25; opacity: 0;
             transition: opacity 0.3s ease, r 0.2s ease, fill 0.2s ease;
+            pointer-events: none; 
         }
-        .node:hover .connection-point, .connection-point.visible, .connection-point.highlight {
-            opacity: 1;
+        .connection-mode-active .connection-point {
+            pointer-events: all;
+            cursor: crosshair;
+        }
+        .connection-point.visible, .connection-point.highlight {
+            opacity: 0.75; 
         }
         .connection-point.highlight {
-            fill: var(--secondary-color);
-            stroke: var(--primary-color);
-            r: calc(var(--cp-radius, 8px) * 1.3);
+            fill: var(--accent-warning); 
+            stroke: var(--bg-canvas);
+            opacity: 1;
+            r: calc(var(--cp-radius, 6px) * 1.3);
         }
 
-
-        .connection-line {
-            stroke-width: 2;
-            fill: none;
-            transition: stroke 0.2s ease;
-        }
-        .connection-line.selected {
-            stroke-width: 4;
-        }
+        .connection-line { stroke-width: 1.75px; fill: none; transition: stroke 0.2s ease; stroke: var(--connection-color); }
+        .connection-line.selected { stroke-width: 2.75px; stroke: var(--connection-selected-color); }
         .connection-label {
-            font-family: var(--font-family); 
-            font-size: 10px;
-            fill: blue;
-            text-anchor: middle;
-            user-select: none;
-        }
-        .connection-handle {
-            fill: var(--primary-color);
-            stroke: white;
-            stroke-width: 1.5;
+            font-family: var(--font-family); font-size: 10px; 
+            fill: var(--connection-label-color);
+            text-anchor: middle; user-select: none; 
             cursor: move; 
-            r: 6px;
+        }
+        
+        .connection-hitbox {
+            stroke: transparent;
+            stroke-width: 16px; 
+            fill: none;
+            cursor: pointer;
+        }
+        .control-point-handle { 
+            fill: var(--control-point-color);
+            stroke: var(--bg-canvas);
+            stroke-width: 1.5;
+            cursor: move;
+            r: 5; 
+            opacity: 0.9;
+            filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.25));
+        }
+        .control-point-handle:hover {
+            opacity: 1;
         }
        
         .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0s 0.3s;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.2); 
+            display: flex; justify-content: center;
+            align-items: center; z-index: 1000; opacity: 0; visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0s 0.2s;
         }
-        .modal.visible {
-            opacity: 1;
-            visibility: visible;
-            transition: opacity 0.3s ease;
-        }
+        .modal.visible { opacity: 1; visibility: visible; transition: opacity 0.2s ease; }
         .modal-content {
-            background-color: white;
-            padding: 30px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            width: 90%;
-            max-width: 500px;
-            text-align: center;
+            background-color: var(--bg-ui-secondary); 
+            padding: 28px; 
+            border-radius: var(--border-radius-general);
+            box-shadow: var(--box-shadow-lg); 
+            width: 90%; max-width: 500px; text-align: left; 
+            border: 1px solid var(--accent-secondary-border);
         }
-        .modal-content h2 {
-            margin-top: 0;
-            color: var(--primary-color);
+        .modal-content h2 { margin-top: 0; margin-bottom: 16px; color: var(--text-primary); font-size: 1.5em; font-weight: 600;}
+        .modal-content p { margin-bottom: 24px; font-size: 0.95em; color: var(--text-secondary); line-height: 1.6; }
+        .modal-content label { display: block; margin-bottom: 6px; text-align: left; font-weight: 500; font-size: 0.9em; color: var(--text-primary); }
+        .modal-content input[type="text"], .modal-content textarea {
+            width: calc(100% - 22px); padding: 10px; margin-bottom: 16px;
+            border: 1px solid var(--accent-secondary-border); 
+            border-radius: var(--border-radius-general); 
+            font-size: 0.95em;
+            background-color: var(--bg-input); 
+            color: var(--text-primary);
         }
-        .modal-content label {
-            display: block;
-            margin-bottom: 8px;
-            text-align: left;
-            font-weight: bold;
+        .modal-content input[type="text"]:focus, .modal-content textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb, 79, 70, 229), 0.25);
         }
-        .modal-content input[type="text"], 
-        .modal-content textarea {
-            width: calc(100% - 20px);
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1em;
+        .modal-content textarea { min-height: 80px; resize: vertical; }
+        .modal-content .modal-buttons { 
+            margin-top: 24px; 
+            display: flex;
+            justify-content: flex-end; 
+            gap: 10px; 
         }
-        .modal-content textarea {
-            min-height: 100px;
-            resize: vertical;
+        .modal-content .modal-buttons button {
+            padding: 9px 18px;
+            font-size: 0.9em;
+            font-weight: 500;
+            border-radius: var(--border-radius-modal-button); 
+            border: none; 
+            box-shadow: var(--box-shadow-sm);
+        }
+        .modal-content .modal-buttons button.primary-action {
+            background-color: var(--button-modal-accept-bg);
+            color: var(--button-modal-accept-text);
+        }
+        .modal-content .modal-buttons button.primary-action:hover {
+            background-color: var(--button-modal-accept-bg-hover);
+        }
+        .modal-content .modal-buttons button.secondary-action {
+            background-color: var(--button-modal-cancel-bg);
+            color: var(--button-modal-text);
+        }
+        .modal-content .modal-buttons button.secondary-action:hover {
+            background-color: var(--button-modal-cancel-bg-hover);
         }
 
-        #context-menu {
-            position: absolute;
-            background-color: white;
-            border: 1px solid #ccc;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            padding: 5px 0;
-            z-index: 1001;
-            min-width: 180px;
-        }
-        #context-menu div {
-            padding: 10px 15px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-        #context-menu div:hover {
-            background-color: #f0f0f0;
-        }
-        
-        .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--secondary-color);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
 
         .sidebar {
-            width: 280px;
-            background-color: #fff;
-            border-left: 1px solid #ddd;
-            padding: 20px;
-            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            overflow-y: auto;
-            transition: transform 0.3s ease-in-out;
-            transform: translateX(100%);
-            z-index: 900;
+            width: 270px; 
+            background-color: var(--bg-ui-main); 
+            border-left: 2px solid var(--accent-primary); /* Borde morado más distintivo */
+            padding: 20px; 
+            box-shadow: -3px 0 10px rgba(0,0,0,0.05); /* Sombra para separar */
+            display: flex; flex-direction: column; gap: 15px;
+            overflow-y: auto; transition: transform 0.25s ease-in-out;
+            transform: translateX(100%); z-index: 900;
         }
-        .sidebar.visible {
-            transform: translateX(0);
-        }
+        .sidebar.visible { transform: translateX(0); }
         .sidebar h3 {
-            margin-top: 0;
-            color: var(--primary-color);
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-            font-size: 1.2em;
+            margin-top: 0; color: var(--text-primary); 
+            border-bottom: 1px solid var(--accent-secondary-border);
+            padding-bottom: 12px; font-size: 1.2em; font-weight: 600;
         }
-        .sidebar label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            font-size: 0.9em;
+        .sidebar label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.875em; color: var(--text-primary); }
+        .sidebar input, .sidebar select, .sidebar textarea {
+            width: 100%; padding: 9px; margin-bottom: 12px; 
+            border: 1px solid var(--accent-secondary-border);
+            border-radius: var(--border-radius-general); font-size: 0.9em; box-sizing: border-box;
+            background-color: var(--bg-input);
+            color: var(--text-primary);
         }
-        .sidebar input[type="text"],
-        .sidebar textarea {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 0.9em;
-            box-sizing: border-box;
+        .sidebar input:focus, .sidebar select:focus, .sidebar textarea:focus {
+             outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb, 79, 70, 229), 0.25);
         }
-        .sidebar textarea {
-            min-height: 80px;
-            resize: vertical;
+        .sidebar textarea { min-height: 75px; resize: vertical; }
+        .sidebar input[type="color"] { padding: 0; height: 38px; border-radius: var(--border-radius-general); overflow:hidden; -webkit-appearance: none; -moz-appearance: none; appearance: none; border: 1px solid var(--accent-secondary-border); }
+        .sidebar input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        .sidebar input[type="color"]::-webkit-color-swatch { border: none; border-radius: calc(var(--border-radius-general) - 2px); } 
+        .sidebar input[type="color"]::-moz-color-swatch { border: none; border-radius: calc(var(--border-radius-general) - 2px); }
+
+        /* Estilo general para botones dentro de la sidebar */
+        .sidebar button {
+            padding: 9px 15px;
+            font-size: 0.875em;
+            font-weight: 500;
+            border-radius: var(--border-radius-general);
+            border: 1px solid var(--accent-secondary-border);
+            background-color: var(--bg-ui-secondary);
+            color: var(--text-primary);
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+            width: 100%; /* Ocupar todo el ancho */
         }
-        .sidebar input[type="color"] {
-            width: calc(100% - 22px);
-            height: 40px;
-            padding: 0;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
+        .sidebar button:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
         }
-         .sidebar .id-display {
-            font-size: 0.8em;
-            color: #777;
-            margin-bottom: 10px;
-            word-break: break-all;
+        /* Botón Editar Curva */
+        .sidebar button#panel-conn-edit-curve-btn {
+            /* Estado por defecto */
         }
-        #recent-colors-container {
-            margin-top: 5px;
-            margin-bottom: 10px;
-            display: flex; /* Para alinear los swatches */
-            flex-wrap: wrap; /* Para que pasen a la siguiente línea si no caben */
-            gap: 5px; /* Espacio entre swatches */
+        .sidebar button#panel-conn-edit-curve-btn.active-manual-curve { /* Clase a añadir con JS */
+            background-color: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
         }
+        .sidebar button#panel-conn-edit-curve-btn.active-manual-curve:hover {
+            background-color: var(--accent-primary-hover);
+            border-color: var(--accent-primary-hover);
+        }
+         /* Botón Eliminar */
+        .sidebar button#panel-delete-btn.danger {
+            background-color: transparent;
+            border-color: var(--accent-danger);
+            color: var(--accent-danger);
+        }
+        .sidebar button#panel-delete-btn.danger:hover {
+            background-color: var(--accent-danger);
+            color: white;
+            border-color: var(--accent-danger);
+        }
+
+
+        .sidebar .checkbox-container { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .sidebar .checkbox-container input[type="checkbox"] { width: auto; margin: 0; accent-color: var(--accent-primary); width: 16px; height: 16px;}
+        .sidebar .checkbox-container label { margin-bottom: 0; font-weight: normal; font-size:0.9em; color: var(--text-secondary); }
+        .sidebar .id-display { font-size: 0.8em; color: var(--text-secondary); margin-bottom: 12px; word-break: break-all; }
+        
+        #recent-colors-container { margin-top: 5px; margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
         .recent-color-swatch {
-            display: inline-block;
-            width: 24px; /* Aumentado ligeramente para mejor click */
-            height: 24px; /* Aumentado ligeramente */
-            border: 1px solid #ccc;
-            border-radius: 4px; /* Más redondeado */
-            cursor: pointer;
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            display: inline-block; width: 24px; height: 24px; border: 1px solid var(--accent-secondary-border);
+            border-radius: 4px; cursor: pointer; transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
-        .recent-color-swatch:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 3px rgba(0,0,0,0.3);
+        .recent-color-swatch:hover { transform: scale(1.15); box-shadow: 0 0 5px var(--accent-primary); }
+
+        .loader {
+            border: 4px solid var(--accent-secondary); border-top: 4px solid var(--accent-primary); border-radius: 50%;
+            width: 32px; height: 32px; animation: spin 0.8s linear infinite; margin: 15px auto;
         }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     </style>
 </head>
 <body>
-
     <div class="header">
-        <h1>Diagrama de Flujo Interactivo</h1>
+        <h1>FlowVibe</h1> 
         <div class="controls">
-            <button id="generate-ai-btn">
+             <button id="generate-ai-btn" title="Generar con IA">
                 <svg viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,6H13V11L17,13L16.25,14.25L11.5,11.5V6M12,18A6,6 0 0,1 6,12H8A4,4 0 0,0 12,16A4,4 0 0,0 16,12H18A6,6 0 0,1 12,18Z" /></svg>
-                Generar con IA
+                <span>IA</span>
             </button>
-            <button id="add-connection-btn">
+            <div class="dropdown-container">
+                <button id="add-node-btn" title="Añadir Nodo">
+                    <svg viewBox="0 0 24 24"><path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" /></svg>
+                    <span>Nodo</span>
+                </button>
+                <div id="add-node-menu" class="dropdown-menu">
+                    <button data-shape="process">Rectángulo</button>
+                    <button data-shape="decision">Rombo</button>
+                    <button data-shape="start">Elipse</button>
+                </div>
+            </div>
+            <button id="add-connection-btn" title="Conectar Nodos">
                  <svg viewBox="0 0 24 24"><path d="M22 12L18 8V11H10V6L12 3L4 12L12 21L10 18V13H18V16L22 12Z" /></svg>
-                Conectar Nodos
+                <span>Conectar</span>
             </button>
-            <button id="export-svg-btn">
+            <button id="export-svg-btn" title="Exportar SVG">
                 <svg viewBox="0 0 24 24"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z" /></svg>
-                Exportar SVG
+                <span>SVG</span>
             </button>
-            <button id="clear-btn">
+            <button id="export-png-btn" title="Exportar PNG"> 
+                <svg viewBox="0 0 24 24"><path d="M21.17 3.25Q21.5 3.25 21.76 3.5 22 3.75 22 4.09V19.91Q22 20.25 21.76 20.5 21.5 20.75 21.17 20.75H2.83Q2.5 20.75 2.24 20.5 2 20.25 2 19.91V4.09Q2 3.75 2.24 3.5 2.5 3.25 2.83 3.25M2.83 19.25H21.17V4.75H2.83M8.5 14.78L10.59 12.31L14.21 16.5H19.5V8.25H4.5V16.5H7L8.5 14.78Z" /></svg>
+                <span>PNG</span>
+            </button>
+            <button id="clear-btn" title="Limpiar Diagrama">
                 <svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg>
-                Limpiar
+                <span>Limpiar</span>
             </button>
-            <button id="set-api-key-btn">
+            <button id="set-api-key-btn" title="Configurar API Key">
                 <svg viewBox="0 0 24 24"><path d="M12,2A4,4 0 0,0 8,6C8,7.58 9.06,8.91 10.5,9.54L4.88,15.12L6.29,16.54L12,10.83L17.71,16.54L19.12,15.12L13.5,9.53C14.94,8.91 16,7.58 16,6A4,4 0 0,0 12,2M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z" /></svg>
-                API Key
+                <span>API Key</span>
             </button>
         </div>
     </div>
@@ -366,13 +451,22 @@
                     <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto-start-reverse">
                         <polygon points="0 0, 10 3.5, 0 7" style="fill: var(--connection-color);" />
                     </marker>
-                     <marker id="arrowhead-selected" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto-start-reverse">
+                    <marker id="arrowhead-selected" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto-start-reverse">
                         <polygon points="0 0, 10 3.5, 0 7" style="fill: var(--connection-selected-color);" />
                     </marker>
+                    <marker id="arrowhead-start" markerWidth="10" markerHeight="7" refX="1" refY="3.5" orient="auto">
+                        <polygon points="10 0, 0 3.5, 10 7" style="fill: var(--connection-color);" />
+                    </marker>
+                    <marker id="arrowhead-start-selected" markerWidth="10" markerHeight="7" refX="1" refY="3.5" orient="auto">
+                        <polygon points="10 0, 0 3.5, 10 7" style="fill: var(--connection-selected-color);" />
+                    </marker>
                 </defs>
-                <g id="nodes-group"></g> <!-- NODOS PRIMERO -->
-                <g id="connections-group"></g> <!-- CONEXIONES DESPUÉS -->
-                <path id="connection-preview-line" stroke="gray" stroke-width="2" stroke-dasharray="5,5" fill="none" visibility="hidden" marker-end="url(#arrowhead)"/>
+                <g id="viewport-group">
+                    <g id="connections-group"></g> 
+                    <g id="nodes-group"></g>
+                    <path id="connection-preview-line" stroke="var(--accent-primary)" stroke-width="1.5" stroke-dasharray="3,3" fill="none" visibility="hidden" marker-end="url(#arrowhead)"/>
+                    <g id="control-points-group"></g> 
+                </g>
             </svg>
         </div>
         <div id="edit-panel" class="sidebar">
@@ -380,18 +474,45 @@
             <div id="edit-panel-node-content" style="display:none;">
                 <label for="panel-node-text">Texto:</label>
                 <textarea id="panel-node-text"></textarea>
-                <label for="panel-node-color">Color:</label>
+                <label for="panel-node-shape">Forma:</label>
+                <select id="panel-node-shape">
+                    <option value="process">Rectángulo (Proceso)</option>
+                    <option value="decision">Rombo (Decisión)</option>
+                    <option value="start">Elipse (Inicio/Fin)</option>
+                </select>
+                <label for="panel-node-color">Color de Fondo:</label>
                 <input type="color" id="panel-node-color">
-                <div id="recent-colors-container">
-                    <!-- Los colores recientes se insertarán aquí por JS -->
-                </div>
+                <div id="recent-colors-container"></div>
                 <label>ID del Nodo:</label>
                 <p id="panel-node-id" class="id-display"></p>
             </div>
             <div id="edit-panel-conn-content" style="display:none;">
-                 <label for="panel-conn-label">Etiqueta de Conexión:</label>
+                 <label for="panel-conn-label">Etiqueta:</label>
                  <input type="text" id="panel-conn-label"/>
-                 <label>ID de Conexión:</label>
+                 <label for="panel-conn-from-point">Desde punto:</label>
+                 <select id="panel-conn-from-point">
+                    <option value="top">Arriba (Top)</option>
+                    <option value="bottom">Abajo (Bottom)</option>
+                    <option value="left">Izquierda (Left)</option>
+                    <option value="right">Derecha (Right)</option>
+                 </select>
+                 <label for="panel-conn-to-point">Hacia punto:</label>
+                 <select id="panel-conn-to-point">
+                    <option value="top">Arriba (Top)</option>
+                    <option value="bottom">Abajo (Bottom)</option>
+                    <option value="left">Izquierda (Left)</option>
+                    <option value="right">Derecha (Right)</option>
+                 </select>
+                 <div class="checkbox-container">
+                    <input type="checkbox" id="panel-conn-curved">
+                    <label for="panel-conn-curved">Línea Curva</label>
+                 </div>
+                 <button id="panel-conn-edit-curve-btn">Editar Curva Manualmente</button>
+                 <div class="checkbox-container" style="margin-top:12px;">
+                    <input type="checkbox" id="panel-conn-bidirectional">
+                    <label for="panel-conn-bidirectional">Bidireccional</label>
+                 </div>
+                 <label style="margin-top:12px;">ID de Conexión:</label>
                  <p id="panel-conn-id" class="id-display"></p>
             </div>
             <button id="panel-delete-btn" class="danger">Eliminar Elemento</button>
@@ -400,89 +521,224 @@
     
     <div id="api-key-modal" class="modal">
         <div class="modal-content">
-            <h2>Configurar API Key de Gemini</h2>
-            <p>Por favor, introduce tu API Key para Google Gemini.</p>
+            <h2>Configurar API Key</h2>
+            <p>Introduce tu API Key de Google Gemini para habilitar la generación de diagramas por IA.</p>
             <label for="api-key-input">API Key:</label>
             <input type="text" id="api-key-input" placeholder="AIzaSy..."/>
-            <button id="save-api-key-btn">Guardar</button>
-            <button id="cancel-api-key-btn" style="background-color: #aaa;">Cancelar</button>
+            <div class="modal-buttons">
+                <button id="cancel-api-key-btn" class="secondary-action">Cancelar</button>
+                <button id="save-api-key-btn" class="primary-action">Guardar</button>
+            </div>
         </div>
     </div>
 
     <div id="ai-prompt-modal" class="modal">
         <div class="modal-content">
             <h2>Generar Diagrama con IA</h2>
-            <p>Describe el proceso que quieres convertir en diagrama:</p>
-            <textarea id="ai-prompt-input" placeholder="Ej: Iniciar sesión, verificar credenciales, si es válido mostrar dashboard, si no mostrar error."></textarea>
+            <p>Describe el proceso o flujo que quieres visualizar. La IA intentará generar un diagrama inicial.</p>
+            <textarea id="ai-prompt-input" placeholder="Ej: Proceso de compra online..."></textarea>
             <div id="ai-loader" class="loader" style="display: none;"></div>
-            <button id="submit-ai-prompt-btn">Generar</button>
-            <button id="cancel-ai-prompt-btn" style="background-color: #aaa;">Cancelar</button>
+            <div class="modal-buttons">
+                <button id="cancel-ai-prompt-btn" class="secondary-action">Cancelar</button>
+                <button id="submit-ai-prompt-btn" class="primary-action">Generar</button>
+            </div>
         </div>
     </div>
-    
-    <div id="context-menu" style="display:none;"></div>
-
 
 <script>
+// --- INICIO SCRIPT PARA ESTILOS DINÁMICOS (RGB para box-shadow) ---
+function hexToRgb(hex) {
+    if (!hex) return null;
+    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
+
+function setAccentColorRgbVariable() {
+    try {
+        const accentColorHex = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').trim();
+        if (accentColorHex) {
+            const rgb = hexToRgb(accentColorHex);
+            if (rgb) {
+                document.documentElement.style.setProperty('--accent-primary-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+            }
+        }
+    } catch (e) {
+        console.error("Error setting RGB variable for accent color:", e);
+    }
+}
+// --- FIN SCRIPT PARA ESTILOS DINÁMICOS ---
+
+document.addEventListener('DOMContentLoaded', () => {
+    setAccentColorRgbVariable(); 
+
     const SVG_NS = "http://www.w3.org/2000/svg";
+    const flowchartContainer = document.getElementById('flowchart-container');
     const flowchartSVG = document.getElementById('flowchart-svg');
+    const viewportGroup = document.getElementById('viewport-group'); 
     const nodesGroup = document.getElementById('nodes-group');
     const connectionsGroup = document.getElementById('connections-group');
+    const controlPointsGroup = document.getElementById('control-points-group'); 
     const connectionPreviewLine = document.getElementById('connection-preview-line');
     
     const apiKeyModal = document.getElementById('api-key-modal');
     const aiPromptModal = document.getElementById('ai-prompt-modal');
-    const contextMenu = document.getElementById('context-menu');
-
+    
     const editPanel = document.getElementById('edit-panel');
     const editPanelNodeContent = document.getElementById('edit-panel-node-content');
     const panelNodeText = document.getElementById('panel-node-text');
+    const panelNodeShape = document.getElementById('panel-node-shape');
     const panelNodeColor = document.getElementById('panel-node-color');
     const panelNodeId = document.getElementById('panel-node-id');
+
     const editPanelConnContent = document.getElementById('edit-panel-conn-content');
     const panelConnLabel = document.getElementById('panel-conn-label');
+    const panelConnFromPoint = document.getElementById('panel-conn-from-point');
+    const panelConnToPoint = document.getElementById('panel-conn-to-point');
+    const panelConnCurved = document.getElementById('panel-conn-curved');
+    const panelConnEditCurveBtn = document.getElementById('panel-conn-edit-curve-btn');
+    const panelConnBidirectional = document.getElementById('panel-conn-bidirectional');
     const panelConnId = document.getElementById('panel-conn-id');
     const panelDeleteBtn = document.getElementById('panel-delete-btn');
     const recentColorsContainer = document.getElementById('recent-colors-container');
-
 
     let nodes = [];
     let connections = [];
     let nextNodeIdCounter = 1;
     let selectedElement = null; 
-    let draggingNode = false;
-    let dragOffsetX, dragOffsetY;
+    let draggingNodeInfo = null;
+    let draggingLabelInfo = null; 
+    let draggingControlPointInfo = null; 
     let connectionMode = false;
-    let firstConnectionNode = null;
-    let firstConnectionPointName = null; 
+    let firstConnectionPoint = null;
     let geminiApiKey = localStorage.getItem('geminiApiKey');
-    let draggingConnectionHandle = null;
     let recentColors = JSON.parse(localStorage.getItem('recentFlowchartColors')) || [];
     const MAX_RECENT_COLORS = 7;
 
-
-    const NODE_WIDTH = 120;
-    const NODE_HEIGHT = 60;
-    const CONNECTION_POINT_RADIUS = 8;
+    const NODE_WIDTH = 115; 
+    const NODE_HEIGHT = 58;
+    const CONNECTION_POINT_RADIUS = 6; 
+    const CONTROL_POINT_HANDLE_RADIUS = 5; 
     document.documentElement.style.setProperty('--cp-radius', CONNECTION_POINT_RADIUS + 'px');
-    const SVG_PADDING = 100; 
+    const DEFAULT_LABEL_Y_OFFSET = -7; 
+    const DEFAULT_CURVE_INTENSITY = 0.33; 
+
+     const nodeDefaultColorsByType = {
+        "process": getCssVariable('--node-process-bg') || getCssVariable('--node-bg-default'),
+        "decision": getCssVariable('--node-decision-bg') || getCssVariable('--node-bg-default'),
+        "start": getCssVariable('--node-start-bg') || getCssVariable('--node-bg-default'),
+        "end": getCssVariable('--node-end-bg') || getCssVariable('--node-bg-default')
+    };
+
+
+    let scale = 1.0;
+    let translateX = 0;
+    let translateY = 0;
+    const MIN_SCALE = 0.15; 
+    const MAX_SCALE = 2.5;  
+    const ZOOM_SENSITIVITY = 0.001;
+    let isPanning = false;
+    let panLastClientX, panLastClientY;
+
+    class FlowchartNode {
+        constructor(id, text, type, x, y, color) {
+            this.id = id; this.text = text; this.type = type; 
+            this.x = x; this.y = y; 
+            this.width = NODE_WIDTH; this.height = NODE_HEIGHT;
+            this.color = color || nodeDefaultColorsByType[type] || getCssVariable('--node-bg-default');
+            this.selected = false;
+        }
+        getConnectionPoints() { 
+            return {
+                'top': { x: this.x, y: this.y - this.height / 2 },
+                'bottom': { x: this.x, y: this.y + this.height / 2 },
+                'left': { x: this.x - this.width / 2, y: this.y },
+                'right': { x: this.x + this.width / 2, y: this.y }
+            };
+        }
+    }
+
+    class FlowchartConnection {
+        constructor(id, fromNodeId, toNodeId, fromPoint = 'bottom', toPoint = 'top', label = "", isCurved = true, isBidirectional = false) {
+            this.id = id || `conn-${Date.now()}-${Math.random().toString(36).substring(2,7)}`; 
+            this.fromNodeId = fromNodeId; this.toNodeId = toNodeId;
+            this.fromPoint = fromPoint; this.toPoint = toPoint;
+            this.label = label; this.selected = false;
+            this.isCurved = isCurved;
+            this.isBidirectional = isBidirectional;
+            this.labelOffsetX = 0; 
+            this.labelOffsetY = 0; 
+            
+            this.usesManualControls = false; 
+            this.cp1 = null; 
+            this.cp2 = null; 
+            this.initializeControlPoints(); 
+        }
+
+        initializeControlPoints(intensity = DEFAULT_CURVE_INTENSITY) {
+            const fromNode = findNodeById(this.fromNodeId);
+            const toNode = findNodeById(this.toNodeId);
+            if (!fromNode || !toNode) {
+                this.cp1 = {x:0, y:0}; this.cp2 = {x:0, y:0}; 
+                return;
+            }
+            const p1 = fromNode.getConnectionPoints()[this.fromPoint];
+            const p2 = toNode.getConnectionPoints()[this.toPoint];
+            const autoControls = getAutoCalculatedControlPoints(p1, p2, this.fromPoint, this.toPoint, intensity);
+            this.cp1 = autoControls.c1;
+            this.cp2 = autoControls.c2;
+        }
+
+        toggleManualControls(forceState) {
+            if (typeof forceState === 'boolean') {
+                this.usesManualControls = forceState;
+            } else {
+                this.usesManualControls = !this.usesManualControls;
+            }
+            if (this.usesManualControls && (!this.cp1 || !this.cp2)) { 
+                this.initializeControlPoints();
+            }
+            // Actualizar estilo del botón en el panel
+            panelConnEditCurveBtn.classList.toggle('active-manual-curve', this.usesManualControls);
+            redrawAll();
+        }
+    }
+    
+    function getAutoCalculatedControlPoints(p1, p2, fromPointType, toPointType, curveIntensity) {
+        let c1x = p1.x, c1y = p1.y, c2x = p2.x, c2y = p2.y;
+        const dist = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+        const curveFactor = Math.min(dist * 0.35, 70) * curveIntensity / DEFAULT_CURVE_INTENSITY; 
+        
+        if (fromPointType === 'bottom') c1y += curveFactor;
+        else if (fromPointType === 'top') c1y -= curveFactor;
+        else if (fromPointType === 'right') c1x += curveFactor;
+        else if (fromPointType === 'left') c1x -= curveFactor;
+
+        if (toPointType === 'bottom') c2y += curveFactor;
+        else if (toPointType === 'top') c2y -= curveFactor;
+        else if (toPointType === 'right') c2x += curveFactor;
+        else if (toPointType === 'left') c2x -= curveFactor;
+        return { c1: { x: c1x, y: c1y }, c2: { x: c2x, y: c2y } };
+    }
+
+    function findNodeById(id) { return nodes.find(n => n.id === id); }
+    function findConnectionById(id) { return connections.find(c => c.id === id); }
 
     function getCssVariable(variableName) {
         return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
     }
 
-    // --- Recent Colors Management ---
     function addRecentColor(hexColor) {
-        if (!hexColor.match(/^#[0-9a-fA-F]{6}$/)) return; // Validate hex
-
+        if (!hexColor || !hexColor.match(/^#[0-9a-fA-F]{6,8}$/i)) return; 
         const index = recentColors.indexOf(hexColor);
-        if (index > -1) { // Move to front if exists
-            recentColors.splice(index, 1);
-        }
-        recentColors.unshift(hexColor); // Add to the beginning
-        if (recentColors.length > MAX_RECENT_COLORS) {
-            recentColors.length = MAX_RECENT_COLORS; // Limit size
-        }
+        if (index > -1) recentColors.splice(index, 1);
+        recentColors.unshift(hexColor);
+        if (recentColors.length > MAX_RECENT_COLORS) recentColors.length = MAX_RECENT_COLORS;
         localStorage.setItem('recentFlowchartColors', JSON.stringify(recentColors));
         renderRecentColors();
     }
@@ -492,7 +748,7 @@
         if (recentColors.length > 0) {
             const label = document.createElement('label');
             label.textContent = "Recientes:";
-            label.style.width = "100%"; // Ocupa toda la línea
+            label.style.width = "100%";
             label.style.marginBottom = "3px";
             recentColorsContainer.appendChild(label);
         }
@@ -504,16 +760,854 @@
             swatch.addEventListener('click', () => {
                 if (selectedElement instanceof FlowchartNode) {
                     selectedElement.color = color;
-                    panelNodeColor.value = color; // Sync color picker
+                    panelNodeColor.value = color;
                     redrawAll();
-                    // No es necesario llamar a addRecentColor aquí de nuevo, ya está.
                 }
             });
             recentColorsContainer.appendChild(swatch);
         });
     }
 
+    function applyViewportTransform() {
+        viewportGroup.setAttribute('transform', `translate(${translateX} ${translateY}) scale(${scale})`);
+        const bgSize = 20 * scale; 
+        flowchartContainer.style.backgroundSize = `${bgSize}px ${bgSize}px`;
+        flowchartContainer.style.backgroundPosition = `${translateX % bgSize}px ${translateY % bgSize}px`;
+    }
 
+    function redrawAll() {
+        nodesGroup.innerHTML = '';
+        connectionsGroup.innerHTML = '';
+        controlPointsGroup.innerHTML = ''; 
+        
+        nodes.forEach(drawNode);
+        connections.forEach(drawConnection);
+        
+        applyViewportTransform();
+        updateSelectionVisuals(); 
+        updateEditPanel();
+        if (editPanel.classList.contains('visible') && selectedElement instanceof FlowchartNode) {
+            renderRecentColors();
+        }
+    }
+
+    function drawNode(node) {
+        const group = document.createElementNS(SVG_NS, 'g');
+        group.setAttribute('id', `node-${node.id}`); 
+        group.setAttribute('class', 'node');
+        group.setAttribute('transform', `translate(${node.x - node.width/2}, ${node.y - node.height/2})`);
+        let shape;
+        const w = node.width, h = node.height;
+        if (node.type === 'decision') {
+            shape = document.createElementNS(SVG_NS, 'polygon');
+            shape.setAttribute('points', `${w/2},0 ${w},${h/2} ${w/2},${h} 0,${h/2}`);
+        } else if (node.type === 'start' || node.type === 'end') {
+            shape = document.createElementNS(SVG_NS, 'ellipse');
+            shape.setAttribute('cx', w / 2); shape.setAttribute('cy', h / 2);
+            shape.setAttribute('rx', w / 2); shape.setAttribute('ry', h / 2);
+        } else { 
+            shape = document.createElementNS(SVG_NS, 'rect');
+            shape.setAttribute('width', w); shape.setAttribute('height', h);
+            shape.setAttribute('rx', getCssVariable('--border-radius-general')); 
+        }
+        shape.setAttribute('fill', node.color); 
+        shape.setAttribute('class', 'node-shape'); 
+        shape.dataset.nodeId = node.id;
+        group.appendChild(shape);
+
+        group.addEventListener('mouseover', () => {
+            if (connectionMode && !firstConnectionPoint) { 
+                group.querySelectorAll('.connection-point').forEach(p => p.classList.add('visible'));
+            }
+        });
+        group.addEventListener('mouseout', () => {
+             if (connectionMode && !firstConnectionPoint) {
+                group.querySelectorAll('.connection-point').forEach(p => p.classList.remove('visible'));
+            }
+        });
+
+        const text = document.createElementNS(SVG_NS, 'text');
+        text.setAttribute('x', w / 2); 
+        text.setAttribute('y', h / 2);
+        text.setAttribute('class', 'node-text'); 
+        text.textContent = node.text;
+        group.appendChild(text);
+
+        Object.entries(node.getConnectionPoints()).forEach(([pointName, svgCoords]) => {
+            const cp = document.createElementNS(SVG_NS, 'circle');
+            cp.setAttribute('cx', svgCoords.x - (node.x - w/2)); 
+            cp.setAttribute('cy', svgCoords.y - (node.y - h/2));
+            cp.setAttribute('r', CONNECTION_POINT_RADIUS / scale); 
+            cp.setAttribute('class', 'connection-point');
+            cp.dataset.nodeId = node.id; 
+            cp.dataset.pointName = pointName;
+            group.appendChild(cp);
+        });
+        nodesGroup.appendChild(group);
+    }
+    
+    function drawConnection(conn) {
+        const fromNode = findNodeById(conn.fromNodeId); 
+        const toNode = findNodeById(conn.toNodeId);
+        if (!fromNode || !toNode) return;
+        
+        const p1 = fromNode.getConnectionPoints()[conn.fromPoint];
+        const p2 = toNode.getConnectionPoints()[conn.toPoint];
+        
+        let pathData, labelBasePos;
+        let c1, c2;
+
+        if (conn.isCurved) {
+            if (conn.usesManualControls && conn.cp1 && conn.cp2) {
+                c1 = conn.cp1;
+                c2 = conn.cp2;
+            } else {
+                const autoControls = getAutoCalculatedControlPoints(p1, p2, conn.fromPoint, conn.toPoint, DEFAULT_CURVE_INTENSITY);
+                conn.cp1 = autoControls.c1; 
+                conn.cp2 = autoControls.c2;
+                c1 = conn.cp1;
+                c2 = conn.cp2;
+            }
+            pathData = `M ${p1.x},${p1.y} C ${c1.x},${c1.y} ${c2.x},${c2.y} ${p2.x},${p2.y}`;
+            labelBasePos = getLabelPosition(p1, p2, c1, c2, true);
+        } else {
+            pathData = `M ${p1.x},${p1.y} L ${p2.x},${p2.y}`;
+            labelBasePos = getLabelPosition(p1, p2, null, null, false);
+        }
+
+        const hitboxPath = document.createElementNS(SVG_NS, 'path');
+        hitboxPath.setAttribute('d', pathData);
+        hitboxPath.setAttribute('class', 'connection-hitbox');
+        hitboxPath.dataset.connectionId = conn.id;
+        connectionsGroup.appendChild(hitboxPath);
+
+        const visiblePath = document.createElementNS(SVG_NS, 'path');
+        visiblePath.setAttribute('d', pathData);
+        visiblePath.setAttribute('class', 'connection-line');
+        visiblePath.dataset.connectionId = conn.id;
+        visiblePath.setAttribute('marker-end', conn.selected ? 'url(#arrowhead-selected)' : 'url(#arrowhead)');
+        if (conn.isBidirectional) {
+            visiblePath.setAttribute('marker-start', conn.selected ? 'url(#arrowhead-start-selected)' : 'url(#arrowhead-start)');
+        }
+        connectionsGroup.appendChild(visiblePath);
+
+        if (conn.label) {
+            const labelText = document.createElementNS(SVG_NS, 'text');
+            labelText.setAttribute('x', labelBasePos.x + conn.labelOffsetX); 
+            labelText.setAttribute('y', labelBasePos.y + DEFAULT_LABEL_Y_OFFSET + conn.labelOffsetY);
+            labelText.setAttribute('class', 'connection-label'); 
+            labelText.textContent = conn.label;
+            labelText.dataset.connectionId = conn.id; 
+            connectionsGroup.appendChild(labelText);
+        }
+
+        if (conn.selected && conn.isCurved && conn.usesManualControls && conn.cp1 && conn.cp2) {
+            drawControlPointHandle(conn.id, 'cp1', conn.cp1.x, conn.cp1.y);
+            drawControlPointHandle(conn.id, 'cp2', conn.cp2.x, conn.cp2.y);
+            const lineToCp1 = document.createElementNS(SVG_NS, 'line');
+            lineToCp1.setAttribute('x1', p1.x); lineToCp1.setAttribute('y1', p1.y);
+            lineToCp1.setAttribute('x2', conn.cp1.x); lineToCp1.setAttribute('y2', conn.cp1.y);
+            lineToCp1.setAttribute('stroke', getCssVariable('--control-point-color')); 
+            lineToCp1.setAttribute('stroke-width', 1 / scale);
+            lineToCp1.setAttribute('stroke-dasharray', `${2/scale},${2/scale}`);
+            lineToCp1.style.opacity = "0.6";
+            controlPointsGroup.appendChild(lineToCp1);
+
+            const lineToCp2 = document.createElementNS(SVG_NS, 'line');
+            lineToCp2.setAttribute('x1', p2.x); lineToCp2.setAttribute('y1', p2.y);
+            lineToCp2.setAttribute('x2', conn.cp2.x); lineToCp2.setAttribute('y2', conn.cp2.y);
+            lineToCp2.setAttribute('stroke', getCssVariable('--control-point-color'));
+            lineToCp2.setAttribute('stroke-width', 1 / scale);
+            lineToCp2.setAttribute('stroke-dasharray', `${2/scale},${2/scale}`);
+            lineToCp2.style.opacity = "0.6";
+            controlPointsGroup.appendChild(lineToCp2);
+        }
+    }
+
+    function drawControlPointHandle(connId, cpName, cx, cy) {
+        const handle = document.createElementNS(SVG_NS, 'circle');
+        handle.setAttribute('cx', cx);
+        handle.setAttribute('cy', cy);
+        handle.setAttribute('r', CONTROL_POINT_HANDLE_RADIUS / scale ); 
+        handle.setAttribute('class', 'control-point-handle');
+        handle.dataset.connectionId = connId;
+        handle.dataset.cpName = cpName; 
+        controlPointsGroup.appendChild(handle);
+    }
+
+
+    function getLabelPosition(p1, p2, c1, c2, isCurved) {
+        if(!isCurved) { 
+            return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+        }
+        const t = 0.5; 
+        const x = Math.pow(1-t,3)*p1.x + 3*Math.pow(1-t,2)*t*c1.x + 3*(1-t)*t*t*c2.x + Math.pow(t,3)*p2.x;
+        const y = Math.pow(1-t,3)*p1.y + 3*Math.pow(1-t,2)*t*c1.y + 3*(1-t)*t*t*c2.y + Math.pow(t,3)*p2.y;
+        return { x, y };
+    }
+
+    function findClosestConnectionPoint(node, targetX, targetY) {
+        if (!node) return null;
+        const points = node.getConnectionPoints(); 
+        let closestPointName = null;
+        let minDistanceSq = Infinity;
+
+        for (const [name, coords] of Object.entries(points)) {
+            const distSq = (coords.x - targetX) ** 2 + (coords.y - targetY) ** 2;
+            if (distSq < minDistanceSq) {
+                minDistanceSq = distSq;
+                closestPointName = name;
+            }
+        }
+        return closestPointName;
+    }
+
+    function updateSelectionVisuals() {
+        document.querySelectorAll('.node-shape').forEach(s => {
+            const node = findNodeById(s.dataset.nodeId);
+            s.classList.toggle('selected', node?.selected);
+        });
+        document.querySelectorAll('.connection-line').forEach(l => {
+            const conn = findConnectionById(l.dataset.connectionId);
+            l.classList.toggle('selected', conn?.selected);
+            if (conn) {
+                l.setAttribute('marker-end', conn.selected ? 'url(#arrowhead-selected)' : 'url(#arrowhead)');
+                if (conn.isBidirectional) {
+                    l.setAttribute('marker-start', conn.selected ? 'url(#arrowhead-start-selected)' : 'url(#arrowhead-start)');
+                } else {
+                    l.removeAttribute('marker-start');
+                }
+            }
+        });
+        document.querySelectorAll('.connection-label').forEach(l => {
+             const conn = findConnectionById(l.dataset.connectionId);
+             l.style.fontWeight = conn?.selected ? '500' : 'normal'; 
+             l.style.fill = conn?.selected ? getCssVariable('--accent-primary') : getCssVariable('--connection-label-color');
+        });
+    }
+
+    flowchartSVG.addEventListener('mousedown', (e) => {
+        const target = e.target;
+        const isControlElement = target.closest('.node, .connection-hitbox, .connection-label, .connection-point, .control-point-handle');
+        const isExternalUI = target.closest('.sidebar, .header .controls, .modal');
+
+        if (!isControlElement && !isExternalUI && e.button === 0) { 
+            isPanning = true;
+            panLastClientX = e.clientX;
+            panLastClientY = e.clientY;
+            flowchartContainer.classList.add('panning');
+            e.stopPropagation(); 
+            return; 
+        }
+        
+        const { x: svgX, y: svgY } = getSVGCoordinates(e); 
+        let elementInteracted = false;
+
+        if (target.classList.contains('control-point-handle')) {
+            const connId = target.dataset.connectionId;
+            const cpName = target.dataset.cpName; 
+            const connection = findConnectionById(connId);
+            if (connection) {
+                draggingControlPointInfo = {
+                    connection: connection,
+                    cpName: cpName,
+                    offsetX: svgX - connection[cpName].x,
+                    offsetY: svgY - connection[cpName].y,
+                };
+                connection.usesManualControls = true; 
+                elementInteracted = true;
+            }
+        } else if (connectionMode && firstConnectionPoint) { 
+            let toNodeId = null;
+            let toPointName = null;
+            
+            let connectionPointElement = null;
+            const highlightedCp = viewportGroup.querySelector('.connection-point.highlight');
+            if (highlightedCp && (highlightedCp === target || highlightedCp.contains(target) || target.closest('.connection-point') === highlightedCp)) {
+                connectionPointElement = highlightedCp;
+            } else if (target.classList.contains('connection-point')) {
+                connectionPointElement = target;
+            } else if (target.closest('.connection-point')) {
+                connectionPointElement = target.closest('.connection-point');
+            }
+
+            const targetNodeShape = target.classList.contains('node-shape') ? target : target.closest('.node')?.querySelector('.node-shape');
+
+            if (connectionPointElement) { 
+                toNodeId = connectionPointElement.dataset.nodeId;
+                toPointName = connectionPointElement.dataset.pointName;
+            } else if (targetNodeShape) { 
+                const potentialToNodeId = targetNodeShape.dataset.nodeId;
+                const toNodeInstance = findNodeById(potentialToNodeId);
+                if (toNodeInstance && potentialToNodeId !== firstConnectionPoint.nodeId) {
+                    toNodeId = potentialToNodeId;
+                    toPointName = findClosestConnectionPoint(toNodeInstance, svgX, svgY);
+                }
+            }
+
+            if (toNodeId && toPointName && toNodeId !== firstConnectionPoint.nodeId) {
+                const newConn = new FlowchartConnection(
+                    null, firstConnectionPoint.nodeId, toNodeId,
+                    firstConnectionPoint.pointName, toPointName
+                );
+                connections.push(newConn);
+                deselectAll(); 
+                selectedElement = newConn; 
+                newConn.selected = true;
+            } else if (toNodeId && toNodeId === firstConnectionPoint.nodeId) {
+                // console.log("No se puede conectar un nodo a sí mismo de esta manera.");
+            }
+            
+            firstConnectionPoint = null;
+            connectionPreviewLine.setAttribute('visibility', 'hidden');
+            showAllConnectionPoints(false);
+            elementInteracted = true;
+            
+        } else if (connectionMode && target.classList.contains('connection-point')) { 
+            const nodeId = target.dataset.nodeId;
+            const pointName = target.dataset.pointName;
+            firstConnectionPoint = { nodeId, pointName, element: target };
+            showAllConnectionPoints(true); 
+            const startNode = findNodeById(nodeId);
+            const startPointCoords = startNode.getConnectionPoints()[pointName];
+            connectionPreviewLine.setAttribute('d', `M ${startPointCoords.x},${startPointCoords.y} L ${svgX},${svgY}`);
+            connectionPreviewLine.setAttribute('visibility', 'visible');
+            elementInteracted = true;
+        }
+
+
+        if (!elementInteracted && !draggingControlPointInfo) { 
+            if (target.classList.contains('connection-label')) {
+                deselectAll();
+                const connId = target.dataset.connectionId;
+                selectedElement = findConnectionById(connId);
+                if (selectedElement) {
+                    selectedElement.selected = true;
+                    draggingLabelInfo = {
+                        connection: selectedElement,
+                        initialMouseX: svgX, initialMouseY: svgY,
+                        initialOffsetX: selectedElement.labelOffsetX, initialOffsetY: selectedElement.labelOffsetY
+                    };
+                    elementInteracted = true;
+                }
+            } else if (target.classList.contains('node-shape')) {
+                deselectAll(); 
+                selectedElement = findNodeById(target.dataset.nodeId);
+                if (selectedElement) {
+                    selectedElement.selected = true;
+                    draggingNodeInfo = {
+                        node: selectedElement,
+                        offsetX: svgX - selectedElement.x,
+                        offsetY: svgY - selectedElement.y
+                    };
+                    elementInteracted = true;
+                }
+            } else if (target.classList.contains('connection-hitbox')) {
+                deselectAll();
+                selectedElement = findConnectionById(target.dataset.connectionId);
+                if (selectedElement) {
+                    selectedElement.selected = true;
+                    elementInteracted = true;
+                }
+            } else if(!isExternalUI && !isPanning) { 
+                 if (connectionMode && firstConnectionPoint) {
+                } else if (!connectionMode) { 
+                    deselectAll();
+                }
+            }
+        }
+        
+        if (elementInteracted) e.stopPropagation();
+        redrawAll();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isPanning) {
+            const deltaClientX = e.clientX - panLastClientX;
+            const deltaClientY = e.clientY - panLastClientY;
+            translateX += deltaClientX;
+            translateY += deltaClientY;
+            panLastClientX = e.clientX;
+            panLastClientY = e.clientY;
+            applyViewportTransform(); 
+            return; 
+        }
+
+        const { x: svgX, y: svgY } = getSVGCoordinates(e);
+
+        if (draggingControlPointInfo) {
+            const conn = draggingControlPointInfo.connection;
+            const cpName = draggingControlPointInfo.cpName;
+            conn[cpName].x = svgX - draggingControlPointInfo.offsetX;
+            conn[cpName].y = svgY - draggingControlPointInfo.offsetY;
+            redrawAll();
+        } else if (draggingLabelInfo) {
+            const deltaX = svgX - draggingLabelInfo.initialMouseX;
+            const deltaY = svgY - draggingLabelInfo.initialMouseY;
+            draggingLabelInfo.connection.labelOffsetX = draggingLabelInfo.initialOffsetX + deltaX;
+            draggingLabelInfo.connection.labelOffsetY = draggingLabelInfo.initialOffsetY + deltaY;
+            redrawAll();
+        } else if (draggingNodeInfo) {
+            draggingNodeInfo.node.x = Math.round(svgX - draggingNodeInfo.offsetX); 
+            draggingNodeInfo.node.y = Math.round(svgY - draggingNodeInfo.offsetY); 
+            connections.forEach(conn => {
+                if ((conn.fromNodeId === draggingNodeInfo.node.id || conn.toNodeId === draggingNodeInfo.node.id) && !conn.usesManualControls) {
+                    conn.initializeControlPoints();
+                }
+            });
+            redrawAll();
+        } else if (connectionMode && firstConnectionPoint) {
+            const startNode = findNodeById(firstConnectionPoint.nodeId);
+            const startPointCoords = startNode.getConnectionPoints()[firstConnectionPoint.pointName];
+            const autoCPs = getAutoCalculatedControlPoints(startPointCoords, {x: svgX, y: svgY}, firstConnectionPoint.pointName, 'top', DEFAULT_CURVE_INTENSITY);
+            connectionPreviewLine.setAttribute('d', `M ${startPointCoords.x},${startPointCoords.y} C ${autoCPs.c1.x},${autoCPs.c1.y} ${autoCPs.c2.x},${autoCPs.c2.y} ${svgX},${svgY}`);
+            highlightConnectionPoint(e.target);
+        } else if (connectionMode) { 
+             highlightConnectionPoint(e.target); 
+        }
+    });
+    
+    document.addEventListener('mouseup', () => { 
+        if (isPanning) {
+            isPanning = false;
+            flowchartContainer.classList.remove('panning');
+        }
+        if (draggingControlPointInfo) { 
+            const conn = draggingControlPointInfo.connection;
+            conn.usesManualControls = true; 
+        }
+        draggingNodeInfo = null; 
+        draggingLabelInfo = null;
+        draggingControlPointInfo = null;
+    });
+    
+    flowchartContainer.addEventListener('mouseleave', () => { 
+        if (isPanning) {
+            isPanning = false;
+            flowchartContainer.classList.remove('panning');
+        }
+    });
+
+    flowchartContainer.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        
+        const rect = flowchartContainer.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left; 
+        const mouseY = e.clientY - rect.top;
+
+        const pt = flowchartSVG.createSVGPoint();
+        pt.x = mouseX;
+        pt.y = mouseY;
+        let SvgMouseBeforeZoom;
+        try {
+            SvgMouseBeforeZoom = pt.matrixTransform(viewportGroup.getScreenCTM().inverse());
+        } catch (err) { 
+            SvgMouseBeforeZoom = { x: (mouseX - translateX) / scale, y: (mouseY - translateY) / scale };
+        }
+
+        const delta = e.deltaY * (e.deltaMode === WheelEvent.DOM_DELTA_PIXEL ? ZOOM_SENSITIVITY : ZOOM_SENSITIVITY * 20);
+        let newScale = scale * (1 - delta); 
+        newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+
+        translateX = SvgMouseBeforeZoom.x - (SvgMouseBeforeZoom.x - translateX) * (newScale / scale);
+        translateY = SvgMouseBeforeZoom.y - (SvgMouseBeforeZoom.y - translateY) * (newScale / scale);
+        
+        scale = newScale;
+        redrawAll(); 
+    });
+
+
+    function highlightConnectionPoint(targetElement) {
+        viewportGroup.querySelectorAll('.connection-point.highlight').forEach(cp => cp.classList.remove('highlight'));
+        let cpToHighlight = null;
+        const cpCandidate = targetElement.classList.contains('connection-point') ? targetElement : targetElement.closest('.connection-point');
+
+        if (cpCandidate && connectionMode) {
+            if (firstConnectionPoint && firstConnectionPoint.element === cpCandidate) {
+                return;
+            }
+            if (firstConnectionPoint && cpCandidate.dataset.nodeId === firstConnectionPoint.nodeId) {
+                return;
+            }
+            cpToHighlight = cpCandidate;
+        }
+        
+        if (cpToHighlight) {
+            cpToHighlight.classList.add('highlight');
+        }
+    }
+
+    document.addEventListener('click', (e) => { 
+        const addNodeMenu = document.getElementById('add-node-menu');
+        if (!document.getElementById('add-node-btn').contains(e.target) && !addNodeMenu.parentElement.contains(e.target)) {
+            addNodeMenu.style.display = 'none';
+        }
+    });
+    
+    function updateEditPanel() {
+        if (selectedElement instanceof FlowchartNode) {
+            editPanelNodeContent.style.display = 'block'; 
+            editPanelConnContent.style.display = 'none';
+            panelNodeText.value = selectedElement.text; 
+            panelNodeShape.value = selectedElement.type;
+            panelNodeColor.value = selectedElement.color;
+            panelNodeId.textContent = selectedElement.id; 
+            editPanel.classList.add('visible');
+            renderRecentColors();
+        } else if (selectedElement instanceof FlowchartConnection) {
+            editPanelNodeContent.style.display = 'none'; 
+            editPanelConnContent.style.display = 'block';
+            panelConnLabel.value = selectedElement.label; 
+            panelConnFromPoint.value = selectedElement.fromPoint;
+            panelConnToPoint.value = selectedElement.toPoint;
+            panelConnCurved.checked = selectedElement.isCurved;
+            panelConnEditCurveBtn.disabled = !selectedElement.isCurved;
+            panelConnEditCurveBtn.textContent = selectedElement.usesManualControls ? "Usar Curva Automática" : "Editar Curva Manualmente";
+            panelConnEditCurveBtn.classList.toggle('active-manual-curve', selectedElement.usesManualControls);
+
+
+            panelConnBidirectional.checked = selectedElement.isBidirectional;
+            panelConnId.textContent = selectedElement.id; 
+            editPanel.classList.add('visible');
+            recentColorsContainer.innerHTML = '';
+        } else {
+            editPanel.classList.remove('visible');
+        }
+    }
+
+    panelNodeText.addEventListener('input', (e) => { if (selectedElement instanceof FlowchartNode) { selectedElement.text = e.target.value; redrawAll(); }});
+    panelNodeShape.addEventListener('change', (e) => { if (selectedElement instanceof FlowchartNode) { selectedElement.type = e.target.value; redrawAll(); }});
+    panelNodeColor.addEventListener('input', (e) => { if (selectedElement instanceof FlowchartNode) { selectedElement.color = e.target.value; redrawAll(); }});
+    panelNodeColor.addEventListener('change', (e) => { if (selectedElement instanceof FlowchartNode) { addRecentColor(e.target.value); }});
+    
+    panelConnLabel.addEventListener('input', (e) => { if (selectedElement instanceof FlowchartConnection) { selectedElement.label = e.target.value; redrawAll(); }});
+    panelConnFromPoint.addEventListener('change', (e) => { 
+        if (selectedElement instanceof FlowchartConnection) { 
+            selectedElement.fromPoint = e.target.value; 
+            if (!selectedElement.usesManualControls) selectedElement.initializeControlPoints();
+            redrawAll(); 
+        }
+    });
+    panelConnToPoint.addEventListener('change', (e) => { 
+        if (selectedElement instanceof FlowchartConnection) { 
+            selectedElement.toPoint = e.target.value; 
+            if (!selectedElement.usesManualControls) selectedElement.initializeControlPoints();
+            redrawAll(); 
+        }
+    });
+    panelConnCurved.addEventListener('change', (e) => { 
+        if (selectedElement instanceof FlowchartConnection) { 
+            selectedElement.isCurved = e.target.checked; 
+            panelConnEditCurveBtn.disabled = !e.target.checked;
+            if (!e.target.checked) {
+                selectedElement.usesManualControls = false; 
+                panelConnEditCurveBtn.classList.remove('active-manual-curve');
+            }
+            redrawAll(); 
+        }
+    });
+    panelConnEditCurveBtn.addEventListener('click', () => {
+        if (selectedElement instanceof FlowchartConnection && selectedElement.isCurved) {
+            selectedElement.toggleManualControls(); 
+        }
+    });
+
+    panelConnBidirectional.addEventListener('change', (e) => { if (selectedElement instanceof FlowchartConnection) { selectedElement.isBidirectional = e.target.checked; redrawAll(); }});
+    
+    panelDeleteBtn.addEventListener('click', () => { if (selectedElement) deleteElement(selectedElement); });
+
+    function getSVGCoordinates(event) {
+        const pt = flowchartSVG.createSVGPoint(); 
+        pt.x = event.clientX; 
+        pt.y = event.clientY;
+        try {
+            const screenCTM = viewportGroup.getScreenCTM();
+            if (screenCTM) {
+                return pt.matrixTransform(screenCTM.inverse());
+            } else { 
+                 const svgRect = flowchartSVG.getBoundingClientRect();
+                 return { 
+                     x: (event.clientX - svgRect.left - translateX) / scale, 
+                     y: (event.clientY - svgRect.top - translateY) / scale 
+                 };
+            }
+        } catch (e) { 
+             const svgRect = flowchartSVG.getBoundingClientRect();
+             return { 
+                 x: (event.clientX - svgRect.left - translateX) / scale, 
+                 y: (event.clientY - svgRect.top - translateY) / scale 
+             };
+        }
+    }
+
+
+    function deselectAll() {
+        if (selectedElement) selectedElement.selected = false;
+        selectedElement = null;
+    }
+
+    function deleteElement(elementInstance) { 
+        if (!elementInstance) return;
+        const toDelete = elementInstance; 
+        deselectAll(); 
+        if (toDelete instanceof FlowchartNode) {
+            nodes = nodes.filter(n => n.id !== toDelete.id);
+            connections = connections.filter(c => c.fromNodeId !== toDelete.id && c.toNodeId !== toDelete.id);
+        } else if (toDelete instanceof FlowchartConnection) {
+            connections = connections.filter(c => c.id !== toDelete.id);
+        }
+        redrawAll();
+    }
+
+    document.addEventListener('keydown', (e) => {
+        const isInputFocused = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) || document.activeElement.closest('.modal-content');
+        if ((e.key === 'Delete' || e.key === 'Backspace') && !isInputFocused) {
+            if (selectedElement) { e.preventDefault(); deleteElement(selectedElement); }
+        }
+        if (e.key === 'Escape') {
+            e.preventDefault(); 
+            if (apiKeyModal.classList.contains('visible')) {
+                apiKeyModal.classList.remove('visible'); return;
+            }
+            if (aiPromptModal.classList.contains('visible')) {
+                aiPromptModal.classList.remove('visible'); return;
+            }
+            if (draggingLabelInfo) { 
+                draggingLabelInfo.connection.labelOffsetX = draggingLabelInfo.initialOffsetX;
+                draggingLabelInfo.connection.labelOffsetY = draggingLabelInfo.initialOffsetY;
+                draggingLabelInfo = null;
+                redrawAll(); 
+                return; 
+            }
+             if (draggingControlPointInfo) { 
+                draggingControlPointInfo = null;
+                redrawAll(); 
+                return;
+            }
+            if (connectionMode) {
+                if(firstConnectionPoint) { 
+                    firstConnectionPoint = null;
+                    connectionPreviewLine.setAttribute('visibility', 'hidden');
+                    showAllConnectionPoints(false);
+                } else { 
+                    resetConnectionMode();
+                }
+            }
+            if (draggingNodeInfo) draggingNodeInfo = null;
+            if (isPanning) { 
+                 isPanning = false; 
+                 flowchartContainer.classList.remove('panning');
+            }
+            deselectAll(); 
+            redrawAll(); 
+        }
+    });
+
+    const addNodeBtn = document.getElementById('add-node-btn');
+    const addNodeMenu = document.getElementById('add-node-menu');
+    addNodeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        addNodeMenu.style.display = addNodeMenu.style.display === 'block' ? 'none' : 'block';
+    });
+    addNodeMenu.addEventListener('click', (e) => {
+        if(e.target.tagName === 'BUTTON') {
+            const shapeType = e.target.dataset.shape;
+            addNodeMenu.style.display = 'none';
+            const containerRect = flowchartContainer.getBoundingClientRect();
+            const centerInScreenX = containerRect.width / 2;
+            const centerInScreenY = containerRect.height / 2;
+
+            const pt = flowchartSVG.createSVGPoint();
+            pt.x = centerInScreenX;
+            pt.y = centerInScreenY;
+            const centerInViewportSpace = pt.matrixTransform(viewportGroup.getScreenCTM().inverse());
+            
+            const newNode = new FlowchartNode(`node${nextNodeIdCounter++}`, `Nuevo ${shapeType}`, shapeType, centerInViewportSpace.x, centerInViewportSpace.y);
+            nodes.push(newNode);
+            deselectAll();
+            selectedElement = newNode;
+            newNode.selected = true;
+            redrawAll();
+        }
+    });
+
+    document.getElementById('add-connection-btn').addEventListener('click', (e) => {
+        connectionMode = !connectionMode;
+        e.currentTarget.classList.toggle('active', connectionMode);
+        flowchartContainer.classList.toggle('connection-mode-active', connectionMode);
+        if (!connectionMode) {
+            resetConnectionMode();
+        } else {
+            deselectAll(); 
+            redrawAll(); 
+        }
+    });
+
+    function showAllConnectionPoints(visible) {
+        viewportGroup.querySelectorAll('.connection-point').forEach(cp => cp.classList.toggle('visible', visible));
+        if (!visible) {
+            viewportGroup.querySelectorAll('.connection-point.highlight').forEach(h => h.classList.remove('highlight'));
+        }
+    }
+
+    function resetConnectionMode() {
+        connectionMode = false;
+        firstConnectionPoint = null;
+        connectionPreviewLine.setAttribute('visibility', 'hidden');
+        showAllConnectionPoints(false);
+        document.getElementById('add-connection-btn').classList.remove('active');
+        flowchartContainer.classList.remove('connection-mode-active');
+    }
+
+    document.getElementById('clear-btn').addEventListener('click', () => {
+        if (confirm('¿Estás seguro de que quieres limpiar todo el diagrama?')) {
+            nodes = []; connections = []; nextNodeIdCounter = 1; deselectAll();
+            if(connectionMode) resetConnectionMode();
+            editPanel.classList.remove('visible');
+            scale = 1.0; translateX = 0; translateY = 0;
+            redrawAll();
+        }
+    });
+    
+    function prepareSvgForExport(svgElement) {
+        const svgClone = svgElement.cloneNode(true);
+        const viewportGroupClone = svgClone.querySelector('#viewport-group');
+        if (viewportGroupClone) {
+            viewportGroupClone.removeAttribute('transform'); 
+            viewportGroupClone.querySelector('#control-points-group')?.remove();
+        }
+
+        svgClone.querySelectorAll('.connection-point, #connection-preview-line, .connection-hitbox').forEach(el => el.remove());
+        svgClone.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+        svgClone.querySelectorAll('.control-point-handle').forEach(el => el.remove());
+
+        svgClone.querySelectorAll('.connection-line').forEach(l => {
+            const connId = l.dataset.connectionId;
+            const originalConn = findConnectionById(connId); 
+            l.style.stroke = getCssVariable('--connection-color'); 
+            l.setAttribute('marker-end', 'url(#arrowhead)');
+            if (originalConn && originalConn.isBidirectional) {
+                l.setAttribute('marker-start', 'url(#arrowhead-start)');
+            } else {
+                l.removeAttribute('marker-start');
+            }
+        });
+        svgClone.querySelectorAll('.node-shape').forEach(s => {
+             const nodeId = s.dataset.nodeId;
+             const originalNode = findNodeById(nodeId);
+             if (originalNode) s.setAttribute('fill', originalNode.color); 
+             s.style.stroke = getCssVariable('--node-border'); 
+        });
+        svgClone.querySelectorAll('.connection-label').forEach(l => {
+             l.style.fill = getCssVariable('--connection-label-color'); 
+             l.style.fontWeight = 'normal';
+        });
+
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        if (nodes.length > 0) { 
+            nodes.forEach(node => { 
+                minX = Math.min(minX, node.x - node.width / 2); maxX = Math.max(maxX, node.x + node.width / 2);
+                minY = Math.min(minY, node.y - node.height / 2); maxY = Math.max(maxY, node.y + node.height / 2);
+            });
+            connections.forEach(conn => {
+                if (conn.isCurved && conn.cp1 && conn.cp2) {
+                    minX = Math.min(minX, conn.cp1.x, conn.cp2.x);
+                    maxX = Math.max(maxX, conn.cp1.x, conn.cp2.x);
+                    minY = Math.min(minY, conn.cp1.y, conn.cp2.y);
+                    maxY = Math.max(maxY, conn.cp1.y, conn.cp2.y);
+                }
+            });
+        } else { 
+            minX = 0; minY = 0;
+            maxX = 500; maxY = 300; 
+        }
+        
+        const EXPORT_PADDING = 50; 
+        const contentWidth = maxX - minX;
+        const contentHeight = maxY - minY;
+        const finalW = contentWidth + EXPORT_PADDING * 2;
+        const finalH = contentHeight + EXPORT_PADDING * 2;
+        const finalMinX = minX - EXPORT_PADDING;
+        const finalMinY = minY - EXPORT_PADDING;
+
+        svgClone.setAttribute('viewBox', `${finalMinX} ${finalMinY} ${finalW} ${finalH}`);
+        svgClone.setAttribute('width', finalW);
+        svgClone.setAttribute('height', finalH);
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            .node-shape { stroke-width: 1.5px; stroke: ${getCssVariable('--node-border')}; }
+            .node-text { font-family: '${getCssVariable('--font-family')}'; font-size: 11.5px; text-anchor: middle; dominant-baseline: middle; user-select: none; fill: ${getCssVariable('--node-text-color')};}
+            .connection-line { stroke-width: 1.75px; fill: none; stroke: ${getCssVariable('--connection-color')};}
+            .connection-label { font-family: '${getCssVariable('--font-family')}'; font-size: 10px; fill: ${getCssVariable('--connection-label-color')}; text-anchor: middle; user-select: none;}
+        `;
+        const defs = svgClone.querySelector('defs');
+        if (defs) {
+            const arrowhead = defs.querySelector('#arrowhead polygon');
+            if(arrowhead) arrowhead.style.fill = getCssVariable('--connection-color');
+            const arrowheadStart = defs.querySelector('#arrowhead-start polygon');
+            if(arrowheadStart) arrowheadStart.style.fill = getCssVariable('--connection-color');
+            
+            defs.querySelector('#arrowhead-selected')?.remove();
+            defs.querySelector('#arrowhead-start-selected')?.remove();
+            defs.appendChild(style);
+        }
+        return { svgString: new XMLSerializer().serializeToString(svgClone), width: finalW, height: finalH };
+    }
+
+
+    document.getElementById('export-svg-btn').addEventListener('click', () => {
+        if (nodes.length === 0) { alert("No hay nada que exportar."); return; }
+        const {svgString} = prepareSvgForExport(flowchartSVG);
+        const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'flowchart.svg'; 
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('export-png-btn').addEventListener('click', () => {
+        if (nodes.length === 0) { alert("No hay nada que exportar."); return; }
+
+        const {svgString, width, height} = prepareSvgForExport(flowchartSVG);
+        const img = new Image();
+        const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const scaleFactor = 2; 
+            canvas.width = width * scaleFactor;
+            canvas.height = height * scaleFactor;
+
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = getCssVariable('--bg-canvas') || '#FFFFFF'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            URL.revokeObjectURL(url);
+
+            const pngUrl = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = pngUrl; a.download = 'flowchart.png';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        };
+        img.onerror = (e) => {
+            console.error("Error al cargar SVG en la imagen para exportar a PNG:", e, "\nSVG Data URL:", url);
+            alert("Error al convertir SVG a imagen. Revisa la consola para más detalles.");
+            URL.revokeObjectURL(url);
+        };
+        img.src = url;
+    });
+    
+    function checkApiKey() {
+        if (!geminiApiKey) {
+            apiKeyModal.classList.add('visible');
+            return false;
+        }
+        return true;
+    }
     document.getElementById('set-api-key-btn').addEventListener('click', () => {
         apiKeyModal.classList.add('visible');
         document.getElementById('api-key-input').value = geminiApiKey || '';
@@ -523,581 +1617,58 @@
         if (geminiApiKey) {
             localStorage.setItem('geminiApiKey', geminiApiKey);
             apiKeyModal.classList.remove('visible');
-            alert('API Key guardada.');
         } else {
             alert('Por favor, introduce una API Key.');
         }
     });
     document.getElementById('cancel-api-key-btn').addEventListener('click', () => apiKeyModal.classList.remove('visible'));
 
-    function checkApiKey() {
-        if (!geminiApiKey) {
-            apiKeyModal.classList.add('visible');
-            return false;
-        }
-        return true;
-    }
-
-    class FlowchartNode {
-        constructor(id, text, type, x, y, color = "#add8e6") {
-            this.id = id; this.text = text; this.type = type; 
-            this.x = x; this.y = y; 
-            this.width = NODE_WIDTH; this.height = NODE_HEIGHT;
-            this.color = color; this.selected = false;
-        }
-        getConnectionPoints() {
-            return {
-                'top': { x: this.x, y: this.y - this.height / 2 },
-                'bottom': { x: this.x, y: this.y + this.height / 2 },
-                'left': { x: this.x - this.width / 2, y: this.y },
-                'right': { x: this.x + this.width / 2, y: this.y }
-            };
-        }
-    }
-
-    class FlowchartConnection {
-        constructor(id, fromNodeId, toNodeId, fromPoint = 'bottom', toPoint = 'top', label = "") {
-            this.id = id || `conn-${Date.now()}-${Math.random().toString(36).substring(2,7)}`; 
-            this.fromNodeId = fromNodeId; this.toNodeId = toNodeId;
-            this.fromPoint = fromPoint; this.toPoint = toPoint;
-            this.label = label; this.selected = false;
-        }
-    }
-    
-    function findNodeById(id) { return nodes.find(n => n.id === id); }
-    function findConnectionById(id) { return connections.find(c => c.id === id); }
-
-    function redrawAll() {
-        // Clear groups
-        while (nodesGroup.firstChild) nodesGroup.removeChild(nodesGroup.firstChild);
-        while (connectionsGroup.firstChild) connectionsGroup.removeChild(connectionsGroup.firstChild);
-    
-        // Draw nodes first (so they are "behind")
-        nodes.forEach(drawNode);
-        // Then draw connections (so they are "on top")
-        connections.forEach(drawConnection);
-    
-        updateSelectionVisuals(); 
-        updateSvgDimensions(); 
-        updateEditPanel();
-        // Render recent colors if panel is visible for a node
-        if (editPanel.classList.contains('visible') && selectedElement instanceof FlowchartNode) {
-            renderRecentColors();
-        }
-    }
-
-    function updateSvgDimensions() {
-        const container = flowchartSVG.parentElement;
-        if (!container) return;
-        if (nodes.length === 0) {
-            flowchartSVG.setAttribute('width', container.clientWidth || '100%');
-            flowchartSVG.setAttribute('height', container.clientHeight || '100%');
-            flowchartSVG.removeAttribute('viewBox'); return;
-        }
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        nodes.forEach(node => {
-            minX = Math.min(minX, node.x - node.width / 2); maxX = Math.max(maxX, node.x + node.width / 2);
-            minY = Math.min(minY, node.y - node.height / 2); maxY = Math.max(maxY, node.y + node.height / 2);
-        });
-        minX = isFinite(minX) ? minX : 0; minY = isFinite(minY) ? minY : 0;
-        maxX = isFinite(maxX) ? maxX : NODE_WIDTH; maxY = isFinite(maxY) ? maxY : NODE_HEIGHT;
-        const svgActualWidth = Math.max(maxX + SVG_PADDING, container.clientWidth);
-        const svgActualHeight = Math.max(maxY + SVG_PADDING, container.clientHeight);
-        flowchartSVG.setAttribute('width', svgActualWidth);
-        flowchartSVG.setAttribute('height', svgActualHeight);
-    }
-
-    function drawNode(node) {
-        const group = document.createElementNS(SVG_NS, 'g');
-        group.setAttribute('id', `node-${node.id}`); group.setAttribute('class', 'node');
-        group.setAttribute('transform', `translate(${node.x - node.width/2}, ${node.y - node.height/2})`);
-        let shape;
-        if (node.type === 'decision') {
-            shape = document.createElementNS(SVG_NS, 'polygon');
-            const w = node.width, h = node.height;
-            shape.setAttribute('points', `${w/2},0 ${w},${h/2} ${w/2},${h} 0,${h/2}`);
-        } else if (node.type === 'start' || node.type === 'end') {
-            shape = document.createElementNS(SVG_NS, 'ellipse');
-            shape.setAttribute('cx', node.width / 2); shape.setAttribute('cy', node.height / 2);
-            shape.setAttribute('rx', node.width / 2); shape.setAttribute('ry', node.height / 2);
-        } else { 
-            shape = document.createElementNS(SVG_NS, 'rect');
-            shape.setAttribute('width', node.width); shape.setAttribute('height', node.height);
-            shape.setAttribute('rx', 5); 
-        }
-        shape.setAttribute('fill', node.color); shape.setAttribute('stroke', getCssVariable('--node-border')); 
-        shape.setAttribute('class', 'node-shape'); shape.dataset.nodeId = node.id;
-        group.appendChild(shape);
-        const text = document.createElementNS(SVG_NS, 'text');
-        text.setAttribute('x', node.width / 2); text.setAttribute('y', node.height / 2);
-        text.setAttribute('class', 'node-text'); text.textContent = node.text;
-        group.appendChild(text);
-        const pointsData = node.getConnectionPoints();
-        for (const pointName in pointsData) {
-            const cp = document.createElementNS(SVG_NS, 'circle');
-            const relativeX = pointsData[pointName].x - node.x + node.width/2;
-            const relativeY = pointsData[pointName].y - node.y + node.height/2;
-            cp.setAttribute('cx', relativeX); cp.setAttribute('cy', relativeY);
-            cp.setAttribute('r', CONNECTION_POINT_RADIUS); cp.setAttribute('class', 'connection-point');
-            cp.dataset.nodeId = node.id; cp.dataset.pointName = pointName;
-            group.appendChild(cp);
-        }
-        nodesGroup.appendChild(group);
-    }
-
-    function drawConnection(conn) {
-        const fromNode = findNodeById(conn.fromNodeId); const toNode = findNodeById(conn.toNodeId);
-        if (!fromNode || !toNode) return;
-        const p1 = fromNode.getConnectionPoints()[conn.fromPoint];
-        const p2 = toNode.getConnectionPoints()[conn.toPoint];
-        const path = document.createElementNS(SVG_NS, 'path');
-        const pathData = getPathData(p1, p2, conn.fromPoint, conn.toPoint);
-        path.setAttribute('d', pathData); path.setAttribute('class', 'connection-line'); 
-        path.dataset.connectionId = conn.id; connectionsGroup.appendChild(path);
-        if (conn.label) {
-            const labelText = document.createElementNS(SVG_NS, 'text');
-            const { controlX, controlY } = getPathControlPoints(p1, p2, conn.fromPoint, conn.toPoint);
-            let labelX = controlX; let labelY = controlY - 10;
-            if (Math.sqrt(Math.pow(controlX - (p1.x + p2.x)/2, 2) + Math.pow(controlY - (p1.y + p2.y)/2, 2)) > 50 ) {
-                 labelX = (p1.x + p2.x) / 2; labelY = (p1.y + p2.y) / 2 - 10;
-            }
-            labelText.setAttribute('x', labelX); labelText.setAttribute('y', labelY);
-            labelText.setAttribute('class', 'connection-label'); labelText.textContent = conn.label;
-            labelText.dataset.connectionId = conn.id; connectionsGroup.appendChild(labelText);
-        }
-        if (conn.selected) {
-            const startHandle = document.createElementNS(SVG_NS, 'circle');
-            startHandle.setAttribute('cx', p1.x); startHandle.setAttribute('cy', p1.y);
-            startHandle.setAttribute('class', 'connection-handle');
-            startHandle.dataset.connectionId = conn.id; startHandle.dataset.handleType = 'from';
-            connectionsGroup.appendChild(startHandle);
-            const endHandle = document.createElementNS(SVG_NS, 'circle');
-            endHandle.setAttribute('cx', p2.x); endHandle.setAttribute('cy', p2.y);
-            endHandle.setAttribute('class', 'connection-handle');
-            endHandle.dataset.connectionId = conn.id; endHandle.dataset.handleType = 'to';
-            connectionsGroup.appendChild(endHandle);
-        }
-    }
-    
-    function getPathControlPoints(p1, p2, fromPointType, toPointType) {
-        const dx = p2.x - p1.x; const dy = p2.y - p1.y;
-        let controlX = (p1.x + p2.x) / 2; let controlY = (p1.y + p2.y) / 2;
-        const curveIntensity = 0.3;
-        if (fromPointType === 'bottom' || fromPointType === 'top') {
-            controlX += dx * curveIntensity;
-            if (fromPointType === 'bottom') controlY += Math.abs(dy) * curveIntensity * (dy === 0 ? 1 : Math.sign(dy)) + (dy===0?NODE_HEIGHT/2:0);
-            else controlY -= Math.abs(dy) * curveIntensity * (dy === 0 ? 1 : Math.sign(dy)) - (dy===0?NODE_HEIGHT/2:0);
-        } else {
-            controlY += dy * curveIntensity;
-            if (fromPointType === 'right') controlX += Math.abs(dx) * curveIntensity * (dx === 0 ? 1 : Math.sign(dx)) + (dx===0?NODE_WIDTH/2:0);
-            else controlX -= Math.abs(dx) * curveIntensity * (dx === 0 ? 1 : Math.sign(dx)) - (dx===0?NODE_WIDTH/2:0);
-        }
-        if(controlX === p2.x && controlY === p2.y) controlY += 20;
-        if(controlX === p1.x && controlY === p1.y) controlY -= 20;
-        return { controlX, controlY };
-    }
-
-    function getPathData(p1, p2, fromPointType, toPointType) {
-        const { controlX, controlY } = getPathControlPoints(p1, p2, fromPointType, toPointType);
-        return `M ${p1.x},${p1.y} Q ${controlX},${controlY} ${p2.x},${p2.y}`;
-    }
-
-    function updateSelectionVisuals() {
-        document.querySelectorAll('.node-shape').forEach(s => {
-            const node = findNodeById(s.dataset.nodeId);
-            s.classList.toggle('selected', node && node.selected);
-            s.style.stroke = (node && node.selected) ? getCssVariable('--node-selected-border') : getCssVariable('--node-border');
-        });
-        document.querySelectorAll('.connection-line').forEach(l => {
-            const conn = findConnectionById(l.dataset.connectionId);
-            l.classList.toggle('selected', conn && conn.selected);
-            l.style.stroke = (conn && conn.selected) ? getCssVariable('--connection-selected-color') : getCssVariable('--connection-color');
-            l.setAttribute('marker-end', (conn && conn.selected) ? 'url(#arrowhead-selected)' : 'url(#arrowhead)');
-        });
-        document.querySelectorAll('.connection-label').forEach(l => {
-             const conn = findConnectionById(l.dataset.connectionId);
-             l.style.fontWeight = (conn && conn.selected) ? 'bold' : 'normal';
-        });
-    }
-
-    flowchartSVG.addEventListener('mousedown', (e) => {
-        hideContextMenu();
-        const target = e.target;
-        const { x: svgX, y: svgY } = getSVGCoordinates(e);
-
-        if (connectionMode && target.classList.contains('connection-point')) {
-            const nodeId = target.dataset.nodeId;
-            const pointName = target.dataset.pointName;
-            const nodeInstance = findNodeById(nodeId);
-            if (!nodeInstance) return;
-            if (!firstConnectionNode) {
-                firstConnectionNode = nodeInstance; firstConnectionPointName = pointName;
-                const absPoint = nodeInstance.getConnectionPoints()[pointName];
-                connectionPreviewLine.setAttribute('d', `M ${absPoint.x},${absPoint.y} Q ${absPoint.x},${absPoint.y} ${absPoint.x},${absPoint.y}`);
-                connectionPreviewLine.setAttribute('visibility', 'visible');
-            } else {
-                if (nodeInstance.id !== firstConnectionNode.id || (nodeInstance.id === firstConnectionNode.id && pointName !== firstConnectionPointName)) {
-                    const newConn = new FlowchartConnection( null, firstConnectionNode.id, nodeInstance.id, firstConnectionPointName, pointName );
-                    connections.push(newConn);
-                    resetConnectionMode();
-                }
-            }
-            updateSelectionVisuals(); return; 
-        }
-
-        let elementWasInteractedWith = false;
-        if (target.classList.contains('node-shape')) {
-            deselectAll(); selectedElement = findNodeById(target.dataset.nodeId);
-            if (selectedElement) {
-                selectedElement.selected = true; draggingNode = true;
-                dragOffsetX = svgX - selectedElement.x + selectedElement.width/2; 
-                dragOffsetY = svgY - selectedElement.y + selectedElement.height/2;
-                elementWasInteractedWith = true;
-            }
-        } else if (target.classList.contains('connection-line') || target.classList.contains('connection-label')) {
-            deselectAll(); selectedElement = findConnectionById(target.dataset.connectionId);
-            if (selectedElement) {
-                selectedElement.selected = true; elementWasInteractedWith = true;
-                redrawAll(); 
-            }
-        } else if (target.classList.contains('connection-handle')) {
-            const connId = target.dataset.connectionId; const handleType = target.dataset.handleType;
-            const conn = findConnectionById(connId);
-            if (conn) {
-                if (!conn.selected) { deselectAll(); conn.selected = true; selectedElement = conn; redrawAll(); }
-                draggingConnectionHandle = { 
-                    connection: conn, handleType: handleType,
-                    originalFromNodeId: conn.fromNodeId, originalFromPoint: conn.fromPoint,
-                    originalToNodeId: conn.toNodeId, originalToPoint: conn.toPoint
-                };
-                const fixedNode = (handleType === 'from') ? findNodeById(conn.toNodeId) : findNodeById(conn.fromNodeId);
-                const fixedPointName = (handleType === 'from') ? conn.toPoint : conn.fromPoint;
-                if (fixedNode && fixedPointName) {
-                    const fixedAbsPoint = fixedNode.getConnectionPoints()[fixedPointName];
-                    const p1ForPreview = (handleType === 'from') ? {x: svgX, y: svgY} : fixedAbsPoint;
-                    const p2ForPreview = (handleType === 'from') ? fixedAbsPoint : {x: svgX, y: svgY};
-                    const fromPtTypePreview = (handleType === 'from') ? 'bottom' : conn.fromPoint; 
-                    const toPtTypePreview = (handleType === 'from') ? conn.toPoint : 'top'; 
-                    connectionPreviewLine.setAttribute('d', getPathData(p1ForPreview, p2ForPreview, fromPtTypePreview, toPtTypePreview));
-                    connectionPreviewLine.setAttribute('visibility', 'visible');
-                    showAllConnectionPoints(true);
-                }
-                elementWasInteractedWith = true;
-            }
-        }
-
-        if (!elementWasInteractedWith && !target.closest('.sidebar') && !target.closest('.header .controls') && !target.classList.contains('recent-color-swatch')) {
-             if (connectionMode) { resetConnectionMode(); } 
-             else { deselectAll(); }
-        }
-        updateSelectionVisuals(); updateEditPanel();
-    });
-
-    flowchartSVG.addEventListener('mousemove', (e) => {
-        const { x: svgX, y: svgY } = getSVGCoordinates(e); 
-        if (draggingNode && selectedElement && (selectedElement instanceof FlowchartNode)) {
-            selectedElement.x = svgX - dragOffsetX + selectedElement.width/2;
-            selectedElement.y = svgY - dragOffsetY + selectedElement.height/2;
-            redrawAll();
-        } else if (connectionMode && firstConnectionNode) {
-            const p1 = firstConnectionNode.getConnectionPoints()[firstConnectionPointName];
-            connectionPreviewLine.setAttribute('d', getPathData(p1, {x: svgX, y: svgY}, firstConnectionPointName, 'top'));
-            highlightConnectionPoint(e.target);
-        } else if (draggingConnectionHandle) {
-            const conn = draggingConnectionHandle.connection;
-            let p1, p2, fromPtType, toPtType;
-            if (draggingConnectionHandle.handleType === 'from') {
-                p1 = {x: svgX, y: svgY}; p2 = findNodeById(conn.toNodeId).getConnectionPoints()[conn.toPoint];
-                fromPtType = 'bottom'; toPtType = conn.toPoint;
-            } else {
-                p1 = findNodeById(conn.fromNodeId).getConnectionPoints()[conn.fromPoint]; p2 = {x: svgX, y: svgY};
-                fromPtType = conn.fromPoint; toPtType = 'top';
-            }
-            connectionPreviewLine.setAttribute('d', getPathData(p1, p2, fromPtType, toPtType));
-            highlightConnectionPoint(e.target);
-        }
-    });
-    
-    function highlightConnectionPoint(target) {
-        document.querySelectorAll('.connection-point.highlight').forEach(cp => cp.classList.remove('highlight'));
-        if (target && target.classList.contains('connection-point') && (connectionMode || draggingConnectionHandle)) {
-            target.classList.add('highlight');
-        }
-    }
-
-    flowchartSVG.addEventListener('mouseup', (e) => {
-        draggingNode = false;
-        if (draggingConnectionHandle) {
-            const conn = draggingConnectionHandle.connection;
-            const handleType = draggingConnectionHandle.handleType;
-            let success = false;
-            if (e.target.classList.contains('connection-point')) {
-                const targetNodeId = e.target.dataset.nodeId;
-                const targetPointName = e.target.dataset.pointName;
-                if (handleType === 'from') {
-                    if (targetNodeId !== conn.toNodeId || (targetNodeId === conn.toNodeId && targetPointName !== conn.toPoint)) {
-                        conn.fromNodeId = targetNodeId; conn.fromPoint = targetPointName; success = true;
-                    }
-                } else {
-                    if (targetNodeId !== conn.fromNodeId || (targetNodeId === conn.fromNodeId && targetPointName !== conn.fromPoint)) {
-                        conn.toNodeId = targetNodeId; conn.toPoint = targetPointName; success = true;
-                    }
-                }
-            }
-            if (!success) { 
-                conn.fromNodeId = draggingConnectionHandle.originalFromNodeId; conn.fromPoint = draggingConnectionHandle.originalFromPoint;
-                conn.toNodeId = draggingConnectionHandle.originalToNodeId; conn.toPoint = draggingConnectionHandle.originalToPoint;
-            }
-            draggingConnectionHandle = null; connectionPreviewLine.setAttribute('visibility', 'hidden');
-            showAllConnectionPoints(false); redrawAll();
-        }
-    });
-
-    flowchartSVG.addEventListener('dblclick', (e) => {
-        if (selectedElement) {
-            if (selectedElement instanceof FlowchartNode && panelNodeText.offsetParent !== null) panelNodeText.focus();
-            else if (selectedElement instanceof FlowchartConnection && panelConnLabel.offsetParent !== null) panelConnLabel.focus();
-        }
-    });
-
-    flowchartSVG.addEventListener('contextmenu', (e) => {
-        e.preventDefault(); hideContextMenu();
-        let targetElementInstance = null; const target = e.target;
-        if (target.classList.contains('node-shape')) targetElementInstance = findNodeById(target.dataset.nodeId);
-        else if (target.classList.contains('connection-line') || target.classList.contains('connection-label') || target.classList.contains('connection-handle')) {
-             targetElementInstance = findConnectionById(target.dataset.connectionId);
-        }
-        if (targetElementInstance) {
-            if (!targetElementInstance.selected) {
-                deselectAll(); targetElementInstance.selected = true; selectedElement = targetElementInstance;
-                updateSelectionVisuals(); updateEditPanel();
-            }
-            showContextMenu(e.clientX, e.clientY, targetElementInstance);
-        } else if (connectionMode) { resetConnectionMode(); alert('Modo conexión cancelado.'); } 
-          else { deselectAll(); updateEditPanel(); }
-    });
-
-    document.addEventListener('click', (e) => { 
-        if (!contextMenu.contains(e.target) && !e.target.closest('#context-menu')) hideContextMenu();
-        if (!flowchartSVG.contains(e.target) && !editPanel.contains(e.target) && !e.target.closest('.modal') && !e.target.closest('.header .controls button') && !e.target.classList.contains('recent-color-swatch')) {
-            if (selectedElement && !connectionMode && !draggingConnectionHandle) { 
-                deselectAll(); updateSelectionVisuals(); updateEditPanel();
-            }
-        }
-    });
-    
-    function showContextMenu(x, y, elementInstance) { 
-        contextMenu.innerHTML = ''; 
-        if (elementInstance instanceof FlowchartNode) addContextMenuItem('Eliminar Nodo', () => deleteElement(elementInstance));
-        else if (elementInstance instanceof FlowchartConnection) addContextMenuItem('Eliminar Conexión', () => deleteElement(elementInstance));
-        if (contextMenu.children.length > 0) {
-            contextMenu.style.left = `${x}px`; contextMenu.style.top = `${y}px`;
-            contextMenu.style.display = 'block';
-        }
-    }
-    function addContextMenuItem(label, action) {
-        const item = document.createElement('div'); item.textContent = label;
-        item.onclick = (e) => { e.stopPropagation(); action(); hideContextMenu(); };
-        contextMenu.appendChild(item);
-    }
-    function hideContextMenu() { contextMenu.style.display = 'none'; }
-
-    function updateEditPanel() {
-        if (selectedElement instanceof FlowchartNode) {
-            editPanelNodeContent.style.display = 'block'; editPanelConnContent.style.display = 'none';
-            panelNodeText.value = selectedElement.text; panelNodeColor.value = selectedElement.color;
-            panelNodeId.textContent = selectedElement.id; editPanel.classList.add('visible');
-            renderRecentColors(); // Show recent colors
-        } else if (selectedElement instanceof FlowchartConnection) {
-            editPanelNodeContent.style.display = 'none'; editPanelConnContent.style.display = 'block';
-            panelConnLabel.value = selectedElement.label; panelConnId.textContent = selectedElement.id;
-            editPanel.classList.add('visible');
-            recentColorsContainer.innerHTML = ''; // Clear recent colors for connections
-        } else {
-            editPanel.classList.remove('visible');
-            editPanelNodeContent.style.display = 'none'; editPanelConnContent.style.display = 'none';
-            recentColorsContainer.innerHTML = ''; // Clear recent colors when nothing is selected
-        }
-    }
-
-    panelNodeText.addEventListener('input', (e) => { if (selectedElement instanceof FlowchartNode) { selectedElement.text = e.target.value; redrawAll(); }});
-    panelNodeColor.addEventListener('input', (e) => { // 'input' for live update
-        if (selectedElement instanceof FlowchartNode) {
-            const newColor = e.target.value;
-            selectedElement.color = newColor;
-            addRecentColor(newColor); // Add to recents
-            redrawAll(); // This will re-render recent colors if needed
-        }
-    });
-    panelConnLabel.addEventListener('input', (e) => { if (selectedElement instanceof FlowchartConnection) { selectedElement.label = e.target.value; redrawAll(); }});
-    panelDeleteBtn.addEventListener('click', () => { if (selectedElement) deleteElement(selectedElement); });
-
-    function getSVGCoordinates(event) {
-        const pt = flowchartSVG.createSVGPoint(); pt.x = event.clientX; pt.y = event.clientY;
-        const ctm = flowchartSVG.getScreenCTM();
-        if (ctm) return pt.matrixTransform(ctm.inverse());
-        const rect = flowchartSVG.getBoundingClientRect();
-        return { x: event.clientX - rect.left, y: event.clientY - rect.top };
-    }
-
-    function deselectAll() {
-        if (selectedElement) selectedElement.selected = false;
-        nodes.forEach(n => n.selected = false); connections.forEach(c => c.selected = false);
-        selectedElement = null;
-    }
-
-    function deleteElement(elementInstance) { 
-        if (!elementInstance) elementInstance = selectedElement; if (!elementInstance) return;
-        const toDelete = elementInstance; deselectAll(); 
-        if (toDelete instanceof FlowchartNode) {
-            nodes = nodes.filter(n => n.id !== toDelete.id);
-            connections = connections.filter(c => c.fromNodeId !== toDelete.id && c.toNodeId !== toDelete.id);
-        } else if (toDelete instanceof FlowchartConnection) {
-            connections = connections.filter(c => c.id !== toDelete.id);
-        }
-        updateEditPanel(); redrawAll();
-    }
-
-    document.addEventListener('keydown', (e) => {
-        const activeEl = document.activeElement;
-        const isInputFocused = activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA';
-        if ((e.key === 'Delete' || e.key === 'Backspace') && !isInputFocused) {
-            if (selectedElement) { e.preventDefault(); deleteElement(selectedElement); }
-        }
-        if (e.key === 'Escape') {
-            if (connectionMode) { resetConnectionMode(); alert('Modo conexión cancelado.'); }
-            if (draggingConnectionHandle) {
-                const conn = draggingConnectionHandle.connection;
-                conn.fromNodeId = draggingConnectionHandle.originalFromNodeId; conn.fromPoint = draggingConnectionHandle.originalFromPoint;
-                conn.toNodeId = draggingConnectionHandle.originalToNodeId; conn.toPoint = draggingConnectionHandle.originalToPoint;
-                draggingConnectionHandle = null; connectionPreviewLine.setAttribute('visibility', 'hidden');
-                showAllConnectionPoints(false); redrawAll();
-            }
-            hideContextMenu(); document.querySelectorAll('.modal.visible').forEach(m => m.classList.remove('visible'));
-            if (selectedElement) { deselectAll(); updateSelectionVisuals(); updateEditPanel(); }
-        }
-    });
-
-    document.getElementById('add-connection-btn').addEventListener('click', () => {
-        connectionMode = true; firstConnectionNode = null; firstConnectionPointName = null;
-        connectionPreviewLine.setAttribute('visibility', 'hidden');
-        showAllConnectionPoints(true); deselectAll(); 
-        updateSelectionVisuals(); updateEditPanel();
-        alert('Modo Conexión Activado: Haz clic en un punto de conexión de origen, luego en uno de destino. Click derecho o ESC para cancelar.');
-    });
-
-    function showAllConnectionPoints(visible) {
-        document.querySelectorAll('.connection-point').forEach(cp => {
-            cp.classList.toggle('visible', visible);
-            if (!visible) cp.classList.remove('highlight');
-        });
-    }
-
-    function resetConnectionMode() {
-        connectionMode = false; firstConnectionNode = null; firstConnectionPointName = null;
-        connectionPreviewLine.setAttribute('visibility', 'hidden');
-        showAllConnectionPoints(false); redrawAll(); 
-    }
-
-    document.getElementById('clear-btn').addEventListener('click', () => {
-        if (confirm('¿Estás seguro de que quieres limpiar todo el diagrama?')) {
-            nodes = []; connections = []; nextNodeIdCounter = 1; selectedElement = null;
-            resetConnectionMode(); draggingConnectionHandle = null; 
-            redrawAll();
-        }
-    });
-
-    document.getElementById('export-svg-btn').addEventListener('click', () => {
-        if (nodes.length === 0) { alert("No hay nada que exportar."); return; }
-        const svgClone = flowchartSVG.cloneNode(true);
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        if (nodes.length > 0) {
-            nodes.forEach(node => {
-                minX = Math.min(minX, node.x - node.width / 2); maxX = Math.max(maxX, node.x + node.width / 2);
-                minY = Math.min(minY, node.y - node.height / 2); maxY = Math.max(maxY, node.y + node.height / 2);
-            });
-        } else { minX = 0; minY = 0; maxX = 200; maxY = 150;}
-        minX = isFinite(minX) ? minX : 0; minY = isFinite(minY) ? minY : 0;
-        maxX = isFinite(maxX) ? maxX : flowchartSVG.parentElement.clientWidth || 2000;
-        maxY = isFinite(maxY) ? maxY : flowchartSVG.parentElement.clientHeight || 1500;
-        const exportContentWidth = Math.max(0, maxX - minX); const exportContentHeight = Math.max(0, maxY - minY);
-        const exportWidth = exportContentWidth + SVG_PADDING; const exportHeight = exportContentHeight + SVG_PADDING;
-        const viewBoxMinX = minX - SVG_PADDING / 2; const viewBoxMinY = minY - SVG_PADDING / 2;
-        svgClone.setAttribute('width', exportWidth); svgClone.setAttribute('height', exportHeight);
-        svgClone.setAttribute('viewBox', `${viewBoxMinX} ${viewBoxMinY} ${exportWidth} ${exportHeight}`);
-        const previewLineClone = svgClone.querySelector('#connection-preview-line');
-        if (previewLineClone) previewLineClone.remove();
-        svgClone.querySelectorAll('.connection-point, .connection-handle').forEach(el => el.remove());
-        svgClone.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-        const styleElement = document.createElementNS(SVG_NS, 'style');
-        styleElement.textContent = `
-            .node-shape { stroke-width: 1.5; stroke: ${getCssVariable('--node-border')}; }
-            .node-text { font-family: ${getCssVariable('--font-family')}; font-size: 12px; text-anchor: middle; dominant-baseline: middle; pointer-events: none; user-select: none; }
-            .connection-line { stroke-width: 2; fill: none; stroke: ${getCssVariable('--connection-color')};}
-            .connection-label { font-family: ${getCssVariable('--font-family')}; font-size: 10px; fill: blue; text-anchor: middle; user-select: none;}
-            #arrowhead polygon { fill: ${getCssVariable('--connection-color')}; }
-        `;
-        const defs = svgClone.querySelector('defs');
-        if (defs) defs.insertAdjacentElement('afterend', styleElement);
-        else svgClone.insertBefore(styleElement, svgClone.firstChild);
-        const serializer = new XMLSerializer(); let svgString = serializer.serializeToString(svgClone);
-        if (!svgString.startsWith('<?xml')) svgString = '<?xml version="1.0" standalone="no"?>\r\n' + svgString;
-        if (svgClone.getAttribute('xmlns') !== SVG_NS && !svgString.includes(`xmlns="${SVG_NS}"`)) {
-            svgString = svgString.replace(/<svg/i, `<svg xmlns="${SVG_NS}"`);
-        }
-        const blob = new Blob([svgString], {type: "image/svg+xml;charset=utf-8"});
-        const url = URL.createObjectURL(blob); const a = document.createElement('a');
-        a.href = url; a.download = 'flowchart.svg'; document.body.appendChild(a); a.click();
-        document.body.removeChild(a); URL.revokeObjectURL(url); alert('SVG exportado.');
-    });
-
     document.getElementById('generate-ai-btn').addEventListener('click', () => {
         if (!checkApiKey()) return;
         aiPromptModal.classList.add('visible');
-        document.getElementById('ai-prompt-input').value = '';
-        document.getElementById('ai-loader').style.display = 'none';
+        document.getElementById('ai-prompt-input').value = ''; 
     });
     document.getElementById('cancel-ai-prompt-btn').addEventListener('click', () => aiPromptModal.classList.remove('visible'));
     document.getElementById('submit-ai-prompt-btn').addEventListener('click', async () => {
         const promptText = document.getElementById('ai-prompt-input').value.trim();
-        if (!promptText) { alert('Por favor, introduce una descripción para el diagrama.'); return; }
+        if (!promptText) { alert("Por favor, describe el proceso."); return; }
         if (!checkApiKey()) return;
+        
         document.getElementById('ai-loader').style.display = 'block';
         document.getElementById('submit-ai-prompt-btn').disabled = true;
+        document.getElementById('cancel-ai-prompt-btn').disabled = true;
+
+
         const systemPrompt = `
-        Eres un asistente que convierte descripciones de procesos en diagramas de flujo JSON.
+        Eres un asistente que convierte descripciones de procesos en diagramas de flujo JSON, con un estilo claro y profesional.
         INSTRUCCIONES IMPORTANTES:
         1. Responde ÚNICAMENTE con un JSON válido, sin texto adicional antes o después del JSON.
-        2. No uses comillas dobles dentro de los valores "text" o "label" de los nodos/conexiones. Usa comillas simples si es necesario, o evítalas.
-        3. Los textos deben ser cortos (máximo 3-4 palabras).
-        4. Colores DEBEN ser hexadecimales (ej: "#RRGGBB"). Sugiere colores semánticos (start: verde claro, end: rojo claro, process: azul claro, decision: amarillo claro) o usa el por defecto "#add8e6".
-        5. Usa coordenadas X entre 100 y 1800, y Y entre 100 y 1300.
-        6. Separa los nodos por al menos 150-200 píxeles para evitar solapamientos.
-        7. Asegúrate de que los IDs de los nodos sean únicos y simples (ej: "node1", "decisionA").
-        8. Para los puntos de conexión ('from_point', 'to_point'), usa solo 'top', 'bottom', 'left', 'right'.
-
+        2. No uses comillas dobles dentro de los valores "text" o "label", salvo que las escapes (ej: \\"texto con comillas\\"). Usa comillas simples si es posible.
+        3. Textos deben ser cortos (máximo 3-4 palabras).
+        4. Colores DEBEN ser hexadecimales (ej: "#RRGGBB"). Usa colores pastel claros para fondos de nodo.
+           Colores de nodo sugeridos (fondo): process: "${nodeDefaultColorsByType.process}", decision: "${nodeDefaultColorsByType.decision}", start: "${nodeDefaultColorsByType.start}", end: "${nodeDefaultColorsByType.end}".
+        5. Usa coordenadas X e Y para posicionar los nodos, evitando solapamientos. Sepáralos por al menos ${NODE_WIDTH + 50}-${NODE_WIDTH + 90} píxeles en X y ${NODE_HEIGHT + 50}-${NODE_HEIGHT + 90} en Y.
+           Un buen rango inicial para X podría ser entre 100 y 800, y para Y entre 100 y 600. Distribúyelos bien.
+        6. IDs de nodos deben ser únicos y simples (ej: "node1", "decisionA", "start_process", "end_process").
+        7. Puntos de conexión ('from_point', 'to_point') deben ser 'top', 'bottom', 'left', o 'right'. Elige puntos lógicos para el flujo.
+        8. Si una conexión es de doble sentido (flujo en ambas direcciones), añade el campo \`"bidirectional": true\` a esa conexión. Por defecto es false.
+        9. Puedes incluir un campo \`"isCurved": true\` o \`false\` para conexiones. Por defecto es true.
+        10. OPCIONAL: Puedes incluir \`"labelOffsetX": <numero>\` y \`"labelOffsetY": <numero>\` para las conexiones si quieres sugerir un desplazamiento para la etiqueta. Por defecto son 0.
+        11. OPCIONAL: Si \`"isCurved": true\`, puedes incluir \`"usesManualControls": true\` y los puntos \`"cp1": {"x": <num>, "y": <num>}\`, \`"cp2": {"x": <num>, "y": <num>}\`. Si no se proveen o \`usesManualControls\` es false, se calcularán automáticamente.
         ESTRUCTURA EXACTA DEL JSON DE SALIDA:
         {
             "nodes": [
-                {"id": "start1", "text": "Inicio", "type": "start", "x": 400, "y": 100, "color": "#90EE90"},
-                {"id": "process1", "text": "Accion 1", "type": "process", "x": 400, "y": 250, "color": "#87CEEB"},
-                {"id": "decision1", "text": "Condicion?", "type": "decision", "x": 400, "y": 400, "color": "#FFE4B5"},
-                {"id": "process2", "text": "Accion Si", "type": "process", "x": 250, "y": 550, "color": "#87CEEB"},
-                {"id": "process3", "text": "Accion No", "type": "process", "x": 550, "y": 550, "color": "#87CEEB"},
-                {"id": "end1", "text": "Fin", "type": "end", "x": 400, "y": 700, "color": "#FFB6C1"}
+                {"id": "s1", "text": "Inicio", "type": "start", "x": 150, "y": 100, "color": "${nodeDefaultColorsByType.start}"},
+                {"id": "p1", "text": "Acción 1", "type": "process", "x": 150, "y": 250, "color": "${nodeDefaultColorsByType.process}"},
+                {"id": "d1", "text": "¿OK?", "type": "decision", "x": 400, "y": 250, "color": "${nodeDefaultColorsByType.decision}"}
             ],
             "connections": [
-                {"from": "start1", "to": "process1", "from_point": "bottom", "to_point": "top", "label": ""},
-                {"from": "process1", "to": "decision1", "from_point": "bottom", "to_point": "top", "label": ""},
-                {"from": "decision1", "to": "process2", "from_point": "left", "to_point": "top", "label": "Si"},
-                {"from": "decision1", "to": "process3", "from_point": "right", "to_point": "top", "label": "No"},
-                {"from": "process2", "to": "end1", "from_point": "bottom", "to_point": "top", "label": ""},
-                {"from": "process3", "to": "end1", "from_point": "bottom", "to_point": "top", "label": ""}
+                {"from": "s1", "to": "p1", "label": "", "from_point": "bottom", "to_point": "top", "isCurved": true},
+                {"from": "p1", "to": "d1", "label": "Revisar", "from_point": "right", "to_point": "left", "isCurved": true, "usesManualControls": true, "cp1": {"x":250, "y":300}, "cp2": {"x":300, "y":200}}
             ]
         }
-        TIPOS DE NODOS PERMITIDOS: start, end, process, decision.
-        PUNTOS DE CONEXIÓN PERMITIDOS: top, bottom, left, right.
-        El JSON debe empezar con { y terminar con }. No incluyas ningún otro texto fuera del bloque JSON.
+        TIPOS DE NODOS PERMITIDOS: start, end, process, decision. 'end' es para puntos finales.
+        El JSON debe empezar con { y terminar con }. No incluyas ningún otro texto fuera del bloque JSON, ni uses markdown como \`\`\`json.
         `;
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`;
         try {
@@ -1106,57 +1677,86 @@
                 body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n\nDescripción del proceso: " + promptText }] }] })
             });
             if (!response.ok) { const errorData = await response.json(); throw new Error(`Error de API: ${response.status} - ${errorData.error?.message || 'Error desconocido'}`);}
-            const data = await response.json(); let aiResponseText = "";
-            if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) aiResponseText = data.candidates[0].content.parts[0].text;
-            else throw new Error("Respuesta de la IA no contiene el texto esperado.");
-            aiResponseText = aiResponseText.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
-            const firstBrace = aiResponseText.indexOf('{'); const lastBrace = aiResponseText.lastIndexOf('}');
-            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) aiResponseText = aiResponseText.substring(firstBrace, lastBrace + 1);
-            else throw new Error("No se pudo extraer un bloque JSON válido de la respuesta de la IA. Respuesta: " + aiResponseText.substring(0, 200) + "...");
-            const diagramData = JSON.parse(aiResponseText);
-            createDiagramFromData(diagramData); aiPromptModal.classList.remove('visible');
-            alert('Diagrama generado exitosamente!');
+            const data = await response.json(); 
+            let aiResponseText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            
+            const firstBrace = aiResponseText.indexOf('{');
+            const lastBrace = aiResponseText.lastIndexOf('}');
+            if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
+                console.error("Respuesta de la IA no parece JSON:", aiResponseText);
+                throw new Error("Respuesta de la IA no contiene un objeto JSON válido. Respuesta: " + aiResponseText.substring(0, 200) + "...");
+            }
+            const jsonString = aiResponseText.substring(firstBrace, lastBrace + 1);
+            
+            const diagramData = JSON.parse(jsonString);
+            createDiagramFromData(diagramData); 
+            aiPromptModal.classList.remove('visible');
         } catch (error) {
             console.error('Error generando diagrama con IA:', error);
-            alert(`Error al generar diagrama: ${error.message}. Revisa la consola para más detalles.\nAsegúrate que tu API Key sea correcta y tenga permisos para Gemini.`);
+            alert(`Error al generar diagrama: ${error.message}. Revisa la consola para más detalles.`);
         } finally {
             document.getElementById('ai-loader').style.display = 'none';
             document.getElementById('submit-ai-prompt-btn').disabled = false;
+            document.getElementById('cancel-ai-prompt-btn').disabled = false;
         }
     });
 
     function createDiagramFromData(data) {
-        nodes = []; connections = []; nextNodeIdCounter = 1; 
-        const defaultNodeColors = { "start": "#90EE90", "end": "#FFB6C1", "process": "#87CEEB", "decision": "#FFE4B5" };
-        if (data.nodes) {
-            data.nodes.forEach(nodeData => {
-                const id = nodeData.id || `node${nextNodeIdCounter++}`;
-                const color = (nodeData.color && nodeData.color.match(/^#[0-9a-fA-F]{6}$/)) ? nodeData.color : (defaultNodeColors[nodeData.type] || '#add8e6');
-                const node = new FlowchartNode( id, nodeData.text, nodeData.type,
-                    parseInt(nodeData.x) || (Math.random() * 1500 + 100), 
-                    parseInt(nodeData.y) || (Math.random() * 1000 + 100), 
-                    color
+        if (!confirm("Esto reemplazará el diagrama actual. ¿Continuar?")) return;
+        nodes = []; connections = []; nextNodeIdCounter = 1; deselectAll();
+        if(connectionMode) resetConnectionMode();
+        scale = 1.0; translateX = 0; translateY = 0;
+
+        const existingNodeIds = new Set();
+
+        data.nodes?.forEach(nodeData => {
+            let id = nodeData.id || `node${nextNodeIdCounter}`;
+            while (existingNodeIds.has(id) || findNodeById(id)) {
+                id = `node${nextNodeIdCounter++}`;
+            }
+            existingNodeIds.add(id);
+            
+            const color = nodeData.color || nodeDefaultColorsByType[nodeData.type] || getCssVariable('--node-bg-default');
+            nodes.push(new FlowchartNode(id, nodeData.text || "Nodo", nodeData.type || "process", parseInt(nodeData.x) || 100, parseInt(nodeData.y) || 100, color));
+            addRecentColor(color);
+            
+            const numIdPart = parseInt(id.replace(/[^0-9]/g, ''));
+            if (!isNaN(numIdPart) && numIdPart >= nextNodeIdCounter) {
+                nextNodeIdCounter = numIdPart + 1;
+            }
+        });
+        
+        data.connections?.forEach(connData => {
+            if (findNodeById(connData.from) && findNodeById(connData.to)) {
+                const newConn = new FlowchartConnection(
+                    null, 
+                    connData.from, connData.to, 
+                    connData.from_point || 'bottom', connData.to_point || 'top', 
+                    connData.label || "", 
+                    connData.isCurved !== undefined ? connData.isCurved : true, 
+                    connData.bidirectional || false
                 );
-                nodes.push(node);
-                addRecentColor(color); // Add AI suggested/default color to recents
-                const numericIdPart = id.match(/\d+$/);
-                if (numericIdPart) { const numericId = parseInt(numericIdPart[0]); if (numericId >= nextNodeIdCounter) nextNodeIdCounter = numericId + 1; }
-            });
-        }
-        if (data.connections) {
-            data.connections.forEach(connData => {
-                const fromNode = findNodeById(connData.from); const toNode = findNodeById(connData.to);
-                if (fromNode && toNode) connections.push(new FlowchartConnection( null, connData.from, connData.to, connData.from_point || 'bottom', connData.to_point || 'top', connData.label || '' ));
-                else console.warn("Conexión inválida de IA, nodo no encontrado:", connData);
-            });
-        }
+                newConn.labelOffsetX = parseInt(connData.labelOffsetX) || 0;
+                newConn.labelOffsetY = parseInt(connData.labelOffsetY) || 0;
+                
+                if (connData.usesManualControls && connData.cp1 && connData.cp2 && connData.cp1.x !== undefined && connData.cp1.y !== undefined && connData.cp2.x !== undefined && connData.cp2.y !== undefined) {
+                    newConn.usesManualControls = true;
+                    newConn.cp1 = { x: parseInt(connData.cp1.x), y: parseInt(connData.cp1.y) };
+                    newConn.cp2 = { x: parseInt(connData.cp2.x), y: parseInt(connData.cp2.y) };
+                } else {
+                    newConn.initializeControlPoints(); 
+                }
+                connections.push(newConn);
+            } else {
+                console.warn(`Conexión ignorada: No se encontraron nodos para ${connData.from} -> ${connData.to}`);
+            }
+        });
         redrawAll(); 
     }
     
-    renderRecentColors(); // Initial render of stored recent colors
-    redrawAll();
-    checkApiKey(); 
-
+    renderRecentColors();
+    redrawAll(); 
+});
 </script>
 </body>
 </html>
